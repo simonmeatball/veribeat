@@ -15,11 +15,11 @@ module vga (
     output wire [9:0] y,
     output wire       video_on,
     output wire       frame_tick,  // One clk cycle at the end of each frame.
-    output wire       hsync,
-    output wire       vsync,
-    output wire [3:0] red,
-    output wire [3:0] green,
-    output wire [3:0] blue
+    output reg        hsync,
+    output reg        vsync,
+    output reg  [3:0] red,
+    output reg  [3:0] green,
+    output reg  [3:0] blue
 );
     localparam H_VISIBLE = 640;
     localparam H_FRONT   = 16;
@@ -59,13 +59,26 @@ module vga (
     assign video_on = !reset && (h_count < H_VISIBLE) && (v_count < V_VISIBLE);
     assign frame_tick = !reset && pixel_tick &&
                         (h_count == H_TOTAL - 1) && (v_count == V_TOTAL - 1);
-    assign hsync = reset || !((h_count >= H_VISIBLE + H_FRONT) &&
-                             (h_count < H_VISIBLE + H_FRONT + H_SYNC));
-    assign vsync = reset || !((v_count >= V_VISIBLE + V_FRONT) &&
-                             (v_count < V_VISIBLE + V_FRONT + V_SYNC));
-    assign red   = video_on ? red_in   : 4'h0;
-    assign green = video_on ? green_in : 4'h0;
-    assign blue  = video_on ? blue_in  : 4'h0;
+    // Register RGB and both syncs on the SAME pixel enable. This prevents
+    // counter/decode glitches reaching the analog VGA connector. All five
+    // outputs describe the sampled x/y and have the same one-pixel latency.
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            hsync <= 1'b1;
+            vsync <= 1'b1;
+            red <= 4'h0;
+            green <= 4'h0;
+            blue <= 4'h0;
+        end else if (pixel_tick) begin
+            hsync <= !((h_count >= H_VISIBLE + H_FRONT) &&
+                       (h_count < H_VISIBLE + H_FRONT + H_SYNC));
+            vsync <= !((v_count >= V_VISIBLE + V_FRONT) &&
+                       (v_count < V_VISIBLE + V_FRONT + V_SYNC));
+            red <= video_on ? red_in : 4'h0;
+            green <= video_on ? green_in : 4'h0;
+            blue <= video_on ? blue_in : 4'h0;
+        end
+    end
 endmodule
 
 `default_nettype wire

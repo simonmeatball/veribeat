@@ -2,6 +2,17 @@
 # Top module: veribeat. The board oscillator is 100 MHz.
 set_property -dict { PACKAGE_PIN W5 IOSTANDARD LVCMOS33 } [get_ports clk]
 create_clock -name sys_clk -period 10.000 [get_ports clk]
+# The current VGA uses the 100 MHz clock plus pixel_tick. If future logic uses
+# the named divided clocks, constrain their BUFG outputs when present in the
+# synthesized netlist. Unused dividers/buffers are normally optimized away.
+set clk25_pin [get_pins -quiet -hierarchical -filter {NAME =~ */clk25/clock_buffer/O}]
+if {[llength $clk25_pin]} {
+    create_generated_clock -name CLK_25MHz -source [get_ports clk] -edges {3 7 11} $clk25_pin
+}
+set clk50_pin [get_pins -quiet -hierarchical -filter {NAME =~ */clk50/clock_buffer/O}]
+if {[llength $clk50_pin]} {
+    create_generated_clock -name CLK_50MHz -source [get_ports clk] -divide_by 2 $clk50_pin
+}
 set_property -dict { PACKAGE_PIN U18 IOSTANDARD LVCMOS33 } [get_ports btnC]
 
 set_property -dict { PACKAGE_PIN G19 IOSTANDARD LVCMOS33 } [get_ports {vgaRed[0]}]
