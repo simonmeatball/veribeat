@@ -8,7 +8,7 @@ a one-pixel white border, and a bouncing 64x64 white square. The square moves
 
 - `clock.v`: exposes real `CLK_100MHz`, `CLK_50MHz`, and `CLK_25MHz` outputs,
   synchronizes reset release, and produces the 25 MHz `pixel_tick` enable.
-  The reusable `clock_divider` supports any even integer division ratio.
+  Simple counters toggle the outputs, following the lab clock-module style.
 - `vga.v`: 640x480 timing, active-low sync, visible-area flag, frame enable,
   coordinates, and registered 4-bit-per-channel RGB blanking.
 - `veribeat.v`: top module connecting the clock, timing, and test pattern.
@@ -20,15 +20,16 @@ The effective pixel rate is 25 MHz, matching the simple VGA example in the
 [Digilent Basys 3 reference manual](https://digilent.com/reference/_media/basys3%3Abasys3_rm.pdf).
 The named clocks are 50% duty-cycle waveforms, distinct from `pixel_tick`.
 Divided clocks stop low during reset (after the next input edge), then restart.
-Vivado routes each used divided clock through a BUFG. The current top keeps all
-logic on 100 MHz and does not consume the divided clocks as clock domains;
-unused clock buffers can be optimized away. For future frequencies, instantiate
-another `clock_divider #(.DIVIDE(N))` in `clock.v`, expose a matching output,
-and add a generated-clock constraint if that output clocks logic. `basys3.xdc`
-already includes conditional constraints for the existing 25/50 MHz BUFGs;
-verify them with Vivado `report_clocks` when adding consumers. Use an
-MMCM/Clocking Wizard for non-integer ratios. Each new clock domain needs its own
-reset-release synchronizer and proper handling of signals crossing domains.
+`CLK_50MHz` toggles every input cycle; `CLK_25MHz` toggles every two input cycles.
+To add an output, declare a counter and an output register, initialize/reset
+both to zero, and toggle the output whenever the counter reaches `N - 1`.
+The resulting frequency is `100,000,000 / (2 * N)` Hz. Give the counter enough
+bits to hold `N - 1`.
+
+The current top keeps all logic on 100 MHz with enables. If future logic uses
+a divided output as its actual clock, add appropriate clock buffering, a
+generated-clock constraint, and reset synchronization for that domain.
+Non-integer division ratios require an MMCM/Clocking Wizard.
 
 This produces 31.25 kHz horizontal sync and approximately 59.52 Hz refresh.
 The standard nominal VGA pixel clock is 25.175 MHz; if the particular monitor
@@ -103,11 +104,11 @@ bounces, and RGB blanking over three complete frames including a
 reset during an additional partial frame. The test starts the square near the
 bottom-right corner to exercise both bounces without simulating hundreds of frames. Add `tests/vga_tb.v` as a simulation
 source only if running the test in Vivado, selecting `vga_tb` as simulation top.
-The separate `clock_tb` tests even, non-power-of-two divider ratios and reset;
+The separate `clock_tb` tests the 25/50/100 MHz outputs, pixel enable, and reset;
 select it as simulation top to run that test.
 
 Validated with Icarus Verilog 13.0: PASS across three complete frames and
-5,052,352 system-clock cycles (generic divider simulation; BUFG delay is not modeled). The design sources and testbench compile in Verilog-2005
+5,052,352 system-clock cycles (counter-based clock implementation). The design sources and testbench compile in Verilog-2005
 mode without warnings. Vivado synthesis, timing closure, and physical monitor
 operation have not yet been verified.
 
