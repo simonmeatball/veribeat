@@ -14,6 +14,24 @@ has no song synchronization yet.
 - `display.v` draws the four lanes, labeled pads, tiles, score, and pulses.
 - `score.v` counts successful notes.
 
+### Vivado project setup
+
+Create an RTL project for the Basys 3 part `xc7a35tcpg236-1`. For the game,
+add `clock.v`, `vga.v`, `veribeat.v`, `input.v`, `notes.v`, `control.v`,
+`score.v`, and `display.v` as Design Sources. Set `veribeat` as the synthesis
+top and enable only `basys3.xdc` in the active constraint set.
+
+For the standalone audio test, use `audio.v` and `audio_test.v` with
+`audio_test` as the synthesis top and only `audio_test.xdc` enabled. The game
+and audio test have different top-level ports. Loading both constraint
+files into one run leaves some `get_ports` queries empty and produces
+`set_property` warnings.
+
+If you copied sources into the Vivado project, make sure the active
+constraints use the updated copy. For an unsupported-command warning,
+open the file and line shown in the synthesis log. Keep Tcl control flow
+such as `if` in a separate Tcl script and keep pin assignments in the XDC.
+
 ### Numpad interface
 
 Connect the PmodKYPD to header JB using the existing pin assignments in
@@ -97,9 +115,8 @@ Pin assignments follow
 
 ### Program the board
 
-1. Create a Vivado RTL project for Basys 3 (`xc7a35tcpg236-1`).
-2. Add `clock.v`, `vga.v`, and `veribeat.v` as design sources and select
-   `veribeat` as the top module. Add `basys3.xdc` as constraints.
+1. Follow the [Vivado project setup](#vivado-project-setup) for the game.
+2. Set the top-level generic `DIAGNOSTIC=1` in the synthesis settings.
 3. Run synthesis, implementation, and bitstream generation; check timing.
 4. Connect the board's VGA port to the Dell's VGA input and select Analog/VGA
    on the monitor. Program the Basys 3 through Vivado Hardware Manager.

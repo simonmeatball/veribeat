@@ -8,20 +8,26 @@ module control (
     input  wire [3:0]  lane_press,
     input  wire [15:0] lanes,
     input  wire [79:0] targets,
-    output reg  [7:0]  visible,
+    output wire [7:0]  visible,
     output reg  [71:0] tile_bottoms,
     output reg  [15:0] pulse_ages,
     output reg  [3:0]  pulse_hit,
     output reg  [3:0]  hits
 );
-    localparam HIT_Y = 404;
-    localparam integer WINDOW = 4;
+    localparam [8:0] HIT_Y = 9'd404;
+    localparam [8:0] FALL_STEP = 9'd5;
+    localparam [8:0] FIELD_TOP = 9'd48;
+    // Render the note once its bottom reaches the visible field.
+    localparam [9:0] VISIBLE_LEAD = (HIT_Y - FIELD_TOP - 1) / FALL_STEP;
+    localparam [9:0] WINDOW = 10'd4;
     localparam [2:0] NO_MATCH = WINDOW + 1;
     localparam PULSE_FRAMES = 12;
     localparam LAST_FRAME = 340;
 
     reg [9:0] frame;
     reg [7:0] resolved;
+    wire [7:0] entered;
+    assign visible = entered & ~resolved;
     reg [3:0] previous_press;
     reg [3:0] pending_press;
     // Catch rising edges at 100 MHz, including an edge on frame_tick itself.
@@ -30,57 +36,77 @@ module control (
 
     reg [7:0] resolved_next;
     reg [3:0] misses;
-    reg [7:0] expiring;
+    wire [7:0] in_window;
+    wire [7:0] at_deadline;
+    wire [23:0] distances;
+
+    genvar note;
+    generate
+        for (note = 0; note < 8; note = note + 1) begin : note_state
+            wire [9:0] target = targets[10*note +: 10];
+            wire [10:0] deadline = {1'b0, target} + {1'b0, WINDOW};
+            wire [9:0] earliest = target >= WINDOW ? target - WINDOW : 10'd0;
+            assign in_window[note] = frame >= earliest && {1'b0, frame} <= deadline;
+            assign at_deadline[note] = {1'b0, frame} >= deadline;
+
+            // Within the window the signed difference fits in four bits.
+            wire [3:0] offset = frame[3:0] - target[3:0];
+            wire [2:0] magnitude = offset[3] ? -offset[2:0] : offset[2:0];
+            assign distances[3*note +: 3] = magnitude;
+
+            reg entered_field;
+            assign entered[note] = entered_field;
+            always @(posedge clk) begin
+                if (reset) begin
+                    entered_field <= target <= VISIBLE_LEAD;
+                    // Off-screen positions can wrap. The visible interval
+                    // is wholly within the 9-bit coordinate range.
+                    tile_bottoms[9*note +: 9] <= HIT_Y - FALL_STEP * target[8:0];
+                end else if (frame_tick && frame < LAST_FRAME) begin
+                    if (frame == target - VISIBLE_LEAD - 10'd1)
+                        entered_field <= 1'b1;
+                    tile_bottoms[9*note +: 9] <= tile_bottoms[9*note +: 9] + FALL_STEP;
+                end
+            end
+        end
+    endgenerate
     reg [11:0] best_slots;
     reg [11:0] best_distances;
     integer slot;
     integer lane;
-    integer delta;
-    integer distance;
-    integer bottom;
+    reg [2:0] distance;
     integer pad;
 
     always @* begin
         resolved_next = resolved;
         hits = 0;
         misses = 0;
-        expiring = 0;
-        visible = 0;
-        tile_bottoms = 0;
         best_slots = 0;
         best_distances = {4{NO_MATCH}};
 
         for (slot = 0; slot < 8; slot = slot + 1) begin
             lane = {30'b0, lanes[2*slot +: 2]};
-            delta = {22'b0, frame};
-            delta = delta - $signed({22'b0, targets[10*slot +: 10]});
-            distance = delta < 0 ? -delta : delta;
-            bottom = HIT_Y + 5 * delta;
-
-            if (!resolved[slot]) begin
-                if (bottom > 48 && bottom <= HIT_Y + 5 * WINDOW) begin
-                    visible[slot] = 1;
-                    tile_bottoms[9*slot +: 9] = bottom[8:0];
-                end
-                expiring[slot] = delta >= WINDOW;
-                if (frame_press[lane] && distance < best_distances[3*lane +: 3]) begin
-                    best_slots[3*lane +: 3] = slot[2:0];
-                    best_distances[3*lane +: 3] = distance[2:0];
-                end
+            distance = distances[3*slot +: 3];
+            if (!resolved[slot] && in_window[slot] &&
+                distance < best_distances[3*lane +: 3]) begin
+                best_slots[3*lane +: 3] = slot[2:0];
+                best_distances[3*lane +: 3] = distance;
             end
         end
 
         for (pad = 0; pad < 4; pad = pad + 1) begin
-            if (best_distances[3*pad +: 3] <= WINDOW) begin
-                hits[pad] = 1;
-                resolved_next[best_slots[3*pad +: 3]] = 1;
-            end else if (frame_press[pad]) begin
-                misses[pad] = 1;
+            if (frame_press[pad]) begin
+                if (best_distances[3*pad +: 3] <= WINDOW) begin
+                    hits[pad] = 1;
+                    resolved_next[best_slots[3*pad +: 3]] = 1;
+                end else begin
+                    misses[pad] = 1;
+                end
             end
         end
         // Accept a hit on the last eligible frame before expiring the note.
         for (slot = 0; slot < 8; slot = slot + 1) begin
-            if (expiring[slot] && !resolved_next[slot]) begin
+            if (at_deadline[slot] && !resolved_next[slot]) begin
                 resolved_next[slot] = 1;
                 misses[lanes[2*slot +: 2]] = 1;
             end
