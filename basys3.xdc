@@ -23,3 +23,14 @@ set_property -dict { PACKAGE_PIN R19 IOSTANDARD LVCMOS33 } [get_ports Vsync]
 
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]
+
+# PmodKYPD on header JB (top row = cols, bottom row = rows).
+# JB1..JB4 = keypad COL4..COL1, JB7..JB10 = keypad ROW4..ROW1.
+set_property -dict { PACKAGE_PIN A14 IOSTANDARD LVCMOS33 } [get_ports {cols[0]}]
+set_property -dict { PACKAGE_PIN A16 IOSTANDARD LVCMOS33 } [get_ports {cols[1]}]
+set_property -dict { PACKAGE_PIN B15 IOSTANDARD LVCMOS33 } [get_ports {cols[2]}]
+set_property -dict { PACKAGE_PIN B16 IOSTANDARD LVCMOS33 } [get_ports {cols[3]}]
+set_property -dict { PACKAGE_PIN A15 IOSTANDARD LVCMOS33 PULLUP true } [get_ports {rows[0]}]
+set_property -dict { PACKAGE_PIN A17 IOSTANDARD LVCMOS33 PULLUP true } [get_ports {rows[1]}]
+set_property -dict { PACKAGE_PIN C15 IOSTANDARD LVCMOS33 PULLUP true } [get_ports {rows[2]}]
+set_property -dict { PACKAGE_PIN C16 IOSTANDARD LVCMOS33 PULLUP true } [get_ports {rows[3]}]
