@@ -65,8 +65,13 @@ module display #(
     wire [6:0] lane_x = field_x[6:0];
     wire [3:0] pad_key = LANE_KEYS[4*pixel_lane +: 4];
     wire [3:0] age = pulse_ages[4*pixel_lane +: 4];
-    wire [3:0] bright = 4'd15 - age;
-    wire [3:0] dim = bright >> 1;
+    // Keep the hit outline full white for the first three frames.
+    // The miss outline uses only the red channel throughout the fade.
+    wire is_hit = pulse_hit[pixel_lane];
+    wire [3:0] red_level = 4'd15 - age;
+    wire [3:0] white_level = age < 4'd3 ? 4'hf : 4'd15 - (age - 4'd2);
+    wire [11:0] pulse_color = is_hit ? {3{white_level}} : {red_level, 8'h00};
+    wire [11:0] glow_color = (pulse_color >> 1) & 12'h777;
     wire [6:0] spread = 7'd2 + {3'b0, age};
     wire [6:0] pulse_left = 7'd16 - spread;
     wire [6:0] pulse_right = 7'd111 + spread;
@@ -122,10 +127,10 @@ module display #(
                 y >= pulse_top && y <= pulse_bottom) begin
                 if (lane_x == pulse_left || lane_x == pulse_right ||
                     y == pulse_top || y == pulse_bottom)
-                    color = pulse_hit[pixel_lane] ? {bright, bright, bright} : {bright, 8'h00};
+                    color = pulse_color;
                 else if (lane_x == pulse_left + 1'b1 || lane_x == pulse_right - 1'b1 ||
                          y == pulse_top + 1'b1 || y == pulse_bottom - 1'b1)
-                    color = pulse_hit[pixel_lane] ? {dim, dim, dim} : {dim, 8'h00};
+                    color = glow_color;
             end
         end
     end

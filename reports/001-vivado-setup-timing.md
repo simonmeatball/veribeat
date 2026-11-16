@@ -49,3 +49,20 @@ notes within the window. The 100 MHz clock and 10 ns constraint remain in
   hold endpoints here. Close this issue after the timing summary confirms
   that the constraints are met. If setup still fails, record the new worst
   path's source, destination, and data delay.
+
+## Follow-up report at 11:17
+
+The second report was generated at 11:17:57 on November 16, 2026.
+Its timing summary and detailed routed paths match the 11:07 report,
+including all 43 setup violations, the −4.610 ns WNS, and the same logic
+and routing delays on the frame-counter-to-VGA path. The new timestamp
+confirms that the report was generated again. The matching paths suggest
+Vivado analyzed the old netlist or synthesized an older project copy of
+`control.v`.
+
+In Vivado, open `control.v` from **Design Sources** and confirm that
+`tile_bottoms` is assigned inside a clocked block in `note_state`. If
+Vivado uses a copied source, update that copy or point the project at the
+repository file. Reset and rerun **Synthesis** (`synth_1)), then rerun
+**Implementation** (`impl_1`). Use the timing summary from the newly
+routed design to verify the fix.

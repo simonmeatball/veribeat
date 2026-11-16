@@ -4,7 +4,8 @@
 
 The default `veribeat` top runs an eight-note test chart, including a two-lane
 chord. Press the matching lane when the bottom edge of a tile reaches the
-purple line. Each hit adds one point and sends a white ring out from the pad.
+purple line. Presses within six frames of the target count (about 100 ms
+early or late). Each hit adds one point and sends a white ring out from the pad.
 An expired note or an unmatched press sends a red ring. The center button
 resets the score and restarts the chart. The chart runs on VGA frames and
 has no song synchronization yet.

@@ -19,7 +19,7 @@ module control (
     localparam [8:0] FIELD_TOP = 9'd48;
     // Render the note once its bottom reaches the visible field.
     localparam [9:0] VISIBLE_LEAD = (HIT_Y - FIELD_TOP - 1) / FALL_STEP;
-    localparam [9:0] WINDOW = 10'd4;
+    localparam [9:0] WINDOW = 10'd6;
     localparam [2:0] NO_MATCH = WINDOW + 1;
     localparam PULSE_FRAMES = 12;
     localparam LAST_FRAME = 340;

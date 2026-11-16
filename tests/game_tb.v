@@ -89,25 +89,33 @@ module game_tb;
         advance(1);
         if (dut.game.points !== 1 || dut.game.visible[0] !== 0) $stop;
         check_pixel(334, 430, 12'hfff);
-        advance(5);
-        check_pixel(329, 430, 12'haaa);
+        advance(2);
+        check_pixel(332, 430, 12'hfff);
+        advance(3);
+        check_pixel(329, 430, 12'hccc);
         advance(7);
         check_pixel(329, 430, 12'h113);
 
-        advance(30); // Frame 123, last eligible frame is 124.
+        advance(20); // Frame 113 is seven frames early and should miss.
+        set_keys(4'b0001);
+        set_keys(4'b0000);
         advance(1);
+        if (dut.game.points !== 1) $stop;
+        check_pixel(78, 430, 12'hf00);
+
+        advance(12); // Frame 126 is six frames late and should hit.
         set_keys(4'b0001);
         set_keys(4'b0000);
         advance(1);
         if (dut.game.points !== 2) $stop;
 
-        advance(35); // Frame 160.
+        advance(27); // Frame 154 is six frames early and should hit.
         set_keys(4'b0110);
         advance(1);
         if (dut.game.points !== 4) $stop;
         check_pixel(206, 430, 12'hfff);
         check_pixel(334, 430, 12'hfff);
-        advance(44); // Advance through lane 4's unplayed note at frame 200.
+        advance(52); // Advance through lane 4's last valid frame (206).
         if (dut.game.points !== 4 || dut.game.visible[4] !== 0) $stop;
         check_pixel(462, 430, 12'hf00);
         advance(1);
