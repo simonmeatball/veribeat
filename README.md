@@ -1,6 +1,48 @@
 # veribeat
 
-## VGA bring-up (Basys 3)
+## Veribeat VGA demo (Basys 3)
+
+The default `veribeat` top runs an eight-note test chart, including a two-lane
+chord. Press the matching lane when the bottom edge of a tile reaches the
+purple line. Each hit adds one point and sends a white ring out from the pad.
+An expired note or an unmatched press sends a red ring. The center button
+resets the score and restarts the chart. The chart runs on VGA frames and
+has no song synchronization yet.
+
+- `notes.v` supplies the demo chart.
+- `control.v` buffers presses, times notes, and tracks one 12-frame pulse per lane.
+- `display.v` draws the four lanes, labeled pads, tiles, score, and pulses.
+- `score.v` counts successful notes.
+
+### Numpad interface
+
+Connect the PmodKYPD to header JB using the existing pin assignments in
+`basys3.xdc`. Add `input.v` alongside the game and VGA sources in Vivado.
+The default `veribeat` top scans the keypad and shows its bottom-row key
+labels on the VGA pads.
+
+| Lane (left to right) | 1 | 2 | 3 | 4 |
+| --- | --- | --- | --- | --- |
+| Key | `0` | `F` | `E` | `D` |
+
+The scanner and game share the 100 MHz clock and synchronized reset. The
+scanner sends a one-cycle pulse per debounced press. The game buffers those
+pulses until the next VGA frame and can judge presses on multiple lanes in
+the same frame. At the default scan rate, two matching sweeps debounce each press. The
+key column and scan phase affect when the pulse arrives.
+
+```sh
+iverilog -g2005 -Wall -s game_tb -o /tmp/veribeat-game-test \
+  clock.v vga.v veribeat.v input.v notes.v control.v score.v display.v tests/game_tb.v
+vvp -N /tmp/veribeat-game-test
+iverilog -g2005 -Wall -s keypad_tb -o /tmp/veribeat-keypad-test input.v tests/keypad_tb.v
+vvp -N /tmp/veribeat-keypad-test
+```
+
+## VGA diagnostic (Basys 3)
+
+The diagnostic is selected with the `DIAGNOSTIC=1` top-level parameter.
+The keypad column pins are high impedance in this mode.
 
 The diagnostic displays eight vertical color bars, a stationary 64-pixel grid,
 a one-pixel white border, and a bouncing 64x64 white square. The square moves
@@ -11,7 +53,7 @@ a one-pixel white border, and a bouncing 64x64 white square. The square moves
   Simple counters toggle the outputs, following the lab clock-module style.
 - `vga.v`: 640x480 timing, active-low sync, visible-area flag, frame enable,
   coordinates, and registered 4-bit-per-channel RGB blanking.
-- `veribeat.v`: top module connecting the clock, timing, and test pattern.
+- `veribeat.v`: top module connecting the clock, game or diagnostic renderer, and timing.
 - `basys3.xdc`: oscillator, center-button, and VGA pin constraints.
 
 All sequential logic uses `posedge clk` at 100 MHz. `pixel_tick` is a clock
@@ -66,10 +108,9 @@ Pin assignments follow
    diagonally and bounce inside the border. Hold the center button to blank
    the display; release it to restart the pattern.
 
-### Connect the game renderer
+### VGA renderer timing
 
-Replace the combinational diagnostic-pattern logic in `veribeat.v` with the renderer in
-`display.v`. Compute RGB from the **current** `x` and `y`; valid visible
+The renderer in `display.v` computes RGB from the **current** `x` and `y`; valid visible
 coordinates are `x=0..639`, `y=0..479` when `video_on` is high. Coordinates
 continue through the blanking intervals (`x=0..799`, `y=0..524`), and `vga.v`
 registers RGB and both sync outputs together once per pixel. The connector

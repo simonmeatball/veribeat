@@ -27,8 +27,8 @@ module vga_tb;
 
     always #5 clk = ~clk;
 
-    veribeat #(.START_X(573), .START_Y(414)) dut (
-        .clk(clk), .btnC(btnC), .Hsync(hsync), .Vsync(vsync),
+    veribeat #(.START_X(573), .START_Y(414), .DIAGNOSTIC(1)) dut (
+        .clk(clk), .btnC(btnC), .rows(4'hf), .cols(), .Hsync(hsync), .Vsync(vsync),
         .vgaRed(red), .vgaGreen(green), .vgaBlue(blue)
     );
 

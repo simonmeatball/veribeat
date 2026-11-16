@@ -1,11 +1,12 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-// VGA diagnostic: static bars/grid, fixed border, and a bouncing white square.
-// Replace the color logic with display.v when the game renderer is ready.
+// Basys 3 VGA game, with the original diagnostic available at elaboration.
 module veribeat #(
     parameter integer START_X = 1,
-    parameter integer START_Y = 1
+    parameter integer START_Y = 1,
+    parameter DIAGNOSTIC = 0,
+    parameter integer KEYPAD_COL_CYCLES = 100_000
 ) (
     input  wire       clk,
     input  wire       btnC,
@@ -13,7 +14,9 @@ module veribeat #(
     output wire       Vsync,
     output wire [3:0] vgaRed,
     output wire [3:0] vgaGreen,
-    output wire [3:0] vgaBlue
+    output wire [3:0] vgaBlue,
+    input  wire [3:0] rows,
+    output wire [3:0] cols
 );
     wire reset;
     wire pixel_tick;
@@ -90,9 +93,53 @@ module veribeat #(
             color = 12'hFFF;
     end
 
+    wire [11:0] video_color;
+    generate
+        if (DIAGNOSTIC) begin : diagnostic
+            assign video_color = color;
+            assign cols = 4'bzzzz;
+        end else begin : game
+            localparam [15:0] LANE_KEYS = 16'hDEF0;
+            wire [3:0] lane_press;
+            wire [15:0] lanes;
+            wire [79:0] targets;
+            wire [7:0] visible;
+            wire [71:0] tile_bottoms;
+            wire [15:0] pulse_ages;
+            wire [3:0] pulse_hit;
+            wire [3:0] hits;
+            wire [3:0] points;
+
+            keypad #(
+                .COL_CYCLES(KEYPAD_COL_CYCLES),
+                .LANE0_KEY(LANE_KEYS[3:0]), .LANE1_KEY(LANE_KEYS[7:4]),
+                .LANE2_KEY(LANE_KEYS[11:8]), .LANE3_KEY(LANE_KEYS[15:12])
+            ) numpad (
+                .clk(clk), .reset(reset), .rows(rows), .cols(cols),
+                .keys(), .pressed(), .released(), .lane_press(lane_press)
+            );
+            notes chart (.lanes(lanes), .targets(targets));
+            control gameplay (
+                .clk(clk), .reset(reset), .frame_tick(frame_tick),
+                .lane_press(lane_press), .lanes(lanes), .targets(targets),
+                .visible(visible), .tile_bottoms(tile_bottoms),
+                .pulse_ages(pulse_ages), .pulse_hit(pulse_hit), .hits(hits)
+            );
+            score tally (
+                .clk(clk), .reset(reset), .frame_tick(frame_tick),
+                .hits(hits), .points(points)
+            );
+            display #(.LANE_KEYS(LANE_KEYS)) renderer (
+                .x(x), .y(y), .lanes(lanes), .visible(visible),
+                .tile_bottoms(tile_bottoms), .pulse_ages(pulse_ages),
+                .pulse_hit(pulse_hit), .points(points), .color(video_color)
+            );
+        end
+    endgenerate
+
     vga video (
         .clk(clk), .reset(reset), .pixel_tick(pixel_tick),
-        .red_in(color[11:8]), .green_in(color[7:4]), .blue_in(color[3:0]),
+        .red_in(video_color[11:8]), .green_in(video_color[7:4]), .blue_in(video_color[3:0]),
         .x(x), .y(y), .video_on(video_on), .frame_tick(frame_tick),
         .hsync(Hsync), .vsync(Vsync),
         .red(vgaRed), .green(vgaGreen), .blue(vgaBlue)

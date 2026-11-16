@@ -1,0 +1,134 @@
+`timescale 1ns / 1ps
+`default_nettype none
+
+module display #(
+    parameter [15:0] LANE_KEYS = 16'hDEF0
+) (
+    input  wire [9:0]  x,
+    input  wire [9:0]  y,
+    input  wire [15:0] lanes,
+    input  wire [7:0]  visible,
+    input  wire [71:0] tile_bottoms,
+    input  wire [15:0] pulse_ages,
+    input  wire [3:0]  pulse_hit,
+    input  wire [3:0]  points,
+    output reg  [11:0] color
+);
+    localparam FIELD_LEFT = 64;
+    localparam FIELD_RIGHT = 576;
+    localparam FIELD_TOP = 48;
+    localparam HIT_Y = 404;
+    localparam PAD_TOP = 410;
+    localparam PAD_BOTTOM = 456;
+
+    // Three by five pixel font, most significant bit at the top left.
+    function [14:0] digit;
+        input [3:0] value;
+        begin
+            case (value)
+                0: digit = 15'b111_101_101_101_111;
+                1: digit = 15'b010_110_010_010_111;
+                2: digit = 15'b111_001_111_100_111;
+                3: digit = 15'b111_001_111_001_111;
+                4: digit = 15'b101_101_111_001_001;
+                5: digit = 15'b111_100_111_001_111;
+                6: digit = 15'b111_100_111_101_111;
+                7: digit = 15'b111_001_010_010_010;
+                8: digit = 15'b111_101_111_101_111;
+                9: digit = 15'b111_101_111_001_111;
+                4'hD: digit = 15'b110_101_101_101_110;
+                4'hE: digit = 15'b111_100_110_100_111;
+                4'hF: digit = 15'b111_100_110_100_100;
+                default: digit = 0;
+            endcase
+        end
+    endfunction
+
+    function glyph_pixel;
+        input [14:0] glyph;
+        input [4:0] dx;
+        input [4:0] dy;
+        reg [2:0] row;
+        reg [2:0] column;
+        begin
+            row = dy[4:2];
+            column = dx[4:2];
+            glyph_pixel = 0;
+            if (row < 5 && column < 3)
+                glyph_pixel = glyph[14 - 3 * row - column];
+        end
+    endfunction
+
+    // The four lanes are 128 pixels wide, so a single lane owns each pixel.
+    wire [9:0] field_x = x - 10'd64;
+    wire [1:0] pixel_lane = field_x[8:7];
+    wire [6:0] lane_x = field_x[6:0];
+    wire [3:0] pad_key = LANE_KEYS[4*pixel_lane +: 4];
+    wire [3:0] age = pulse_ages[4*pixel_lane +: 4];
+    wire [3:0] bright = 4'd15 - age;
+    wire [3:0] dim = bright >> 1;
+    wire [6:0] spread = 7'd2 + {3'b0, age};
+    wire [6:0] pulse_left = 7'd16 - spread;
+    wire [6:0] pulse_right = 7'd111 + spread;
+    wire [9:0] pulse_top = PAD_TOP - spread;
+    wire [9:0] pulse_bottom = PAD_BOTTOM - 1 + spread;
+
+    integer slot;
+    reg [9:0] bottom;
+    always @* begin
+        color = 12'h012;
+        bottom = 0;
+        // A segmented score indicator beside the numeric count.
+        if (y >= 19 && y < 31 && x >= 64 && x < 160) begin
+            color = 12'h214;
+            if (x[1:0] != 2'b11 && x - 10'd64 < 12 * points)
+                color = 12'h2bd;
+        end
+        if (x >= 172 && x < 184 && y >= 15 && y < 35 &&
+            glyph_pixel(digit(points), x[4:0] - 5'd12, y[4:0] - 5'd15))
+            color = 12'hfff;
+
+        if (x >= FIELD_LEFT && x < FIELD_RIGHT && y >= FIELD_TOP && y < 470) begin
+            color = 12'h113;
+            if (y[4:0] == 0)
+                color = 12'h224;
+            if (lane_x == 0 || lane_x == 127)
+                color = 12'h436;
+
+            for (slot = 0; slot < 8; slot = slot + 1) begin
+                bottom = {1'b0, tile_bottoms[9*slot +: 9]};
+                if (visible[slot] && lanes[2*slot +: 2] == pixel_lane &&
+                    lane_x >= 16 && lane_x < 112 && y < bottom && y + 10'd36 >= bottom) begin
+                    color = 12'h158;
+                    if (lane_x < 18 || lane_x >= 110 ||
+                        y + 10'd2 >= bottom || y + 10'd34 < bottom)
+                        color = 12'h6ef;
+                end
+            end
+
+            if (y == HIT_Y)
+                color = 12'hb8f;
+            if (y >= PAD_TOP && y < PAD_BOTTOM && lane_x >= 16 && lane_x < 112) begin
+                color = 12'h324;
+                if (y < PAD_TOP + 2 || y >= PAD_BOTTOM - 2 ||
+                    lane_x < 18 || lane_x >= 110)
+                    color = 12'h96e;
+                if (lane_x >= 58 && lane_x < 70 && y >= 423 && y < 443 &&
+                    glyph_pixel(digit(pad_key), lane_x[4:0] - 5'd26, y[4:0] - 5'd7))
+                    color = 12'hfff;
+            end
+
+            if (age < 12 && lane_x >= pulse_left && lane_x <= pulse_right &&
+                y >= pulse_top && y <= pulse_bottom) begin
+                if (lane_x == pulse_left || lane_x == pulse_right ||
+                    y == pulse_top || y == pulse_bottom)
+                    color = pulse_hit[pixel_lane] ? {bright, bright, bright} : {bright, 8'h00};
+                else if (lane_x == pulse_left + 1'b1 || lane_x == pulse_right - 1'b1 ||
+                         y == pulse_top + 1'b1 || y == pulse_bottom - 1'b1)
+                    color = pulse_hit[pixel_lane] ? {dim, dim, dim} : {dim, 8'h00};
+            end
+        end
+    end
+endmodule
+
+`default_nettype wire
