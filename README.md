@@ -1,62 +1,162 @@
 # veribeat
 
-## Veribeat VGA demo (Basys 3)
+## Veribeat game (Basys 3)
 
-The default `veribeat` top runs an eight-note test chart, including a two-lane
-chord. Press the matching lane when the bottom edge of a tile reaches the
-purple line. Presses within six frames of the target count (about 100 ms
-early or late). Each hit adds one point and sends a white ring out from the pad.
-An expired note or an unmatched press sends a red ring. The center button
-resets the score and restarts the chart. The chart runs on VGA frames and
-has no song synchronization yet.
+The game accepts up to 1,024 tap notes from a text chart. Press the matching
+bottom-row keypad key when a cyan tile reaches the purple line. The hit
+window is ±100 ms. A hit adds one point and flashes white. A missed note or
+unmatched press flashes red. The score supports 0–1024.
 
-- `notes.v` supplies the demo chart.
-- `control.v` buffers presses, times notes, and tracks one 12-frame pulse per lane.
-- `display.v` draws the four lanes, labeled pads, tiles, score, and pulses.
-- `score.v` counts successful notes.
+The supplied [song_0 chart](charts/song_0.txt) contains 854 notes matched to
+spectral attacks in `audio/songs/song_0.mp3`, YOASOBI's Yoru ni Kakeru. Analysis
+of this exact file found a tempo near 130 BPM and 262.177 seconds of decoded
+audio. The chart follows beats, stronger eighth notes, and syncopated accents,
+with 32 two-key chords. Same-key presses are separated by at least 220 ms.
+Its current hardware calibration offset is zero. The arrangement is generated
+from audio analysis and still benefits from a listening/playtesting pass.
+
+The [analysis record](charts/song_0.analysis.json) stores the source MP3's
+SHA-256 hash, timing statistics, and each selected attack. To regenerate the
+arrangement, install the optional authoring dependencies `librosa`, `numpy`,
+`scipy`, `soundfile`, and `imageio-ffmpeg`, then run the following command from
+the repository root. This also regenerates the chart ROM and configuration.
+
+```sh
+python3 tools/match_song_chart.py audio/songs/song_0.mp3
+```
+
+### Edit and compile charts
+
+```text
+# target_ms lane, measured from audio playback start
+song_id 0
+duration_ms 262177
+audio_offset_ms 0
+1500 0
+2000 1
+2500 1
+2500 2
+```
+
+Lane 0 is the leftmost lane. Equal times on different lanes form chords.
+Keep times sorted. Positive `audio_offset_ms` moves notes later relative to
+the FPGA's playback command. The compiler checks capacity, lane numbers,
+duplicates, metadata, and adjusted note times.
+
+Run from the repository root after editing a chart.
+
+```sh
+python3 tools/compile_chart.py charts/song_0.txt
+```
+
+This generates `notes_data.mem` (1,024 padded 40-bit words) and
+`notes_config.vh` (note count, song ID, duration). `notes.v` reads the memory
+at build time. Rebuild and program the FPGA after changing the chart.
 
 ### Vivado project setup
 
-Create an RTL project for the Basys 3 part `xc7a35tcpg236-1`. For the game,
-add `clock.v`, `vga.v`, `veribeat.v`, `input.v`, `notes.v`, `control.v`,
-`score.v`, and `display.v` as Design Sources. Set `veribeat` as the synthesis
-top and enable only `basys3.xdc` in the active constraint set.
+Create an RTL project for Basys 3 part `xc7a35tcpg236-1`. Add these design
+sources and set `veribeat` as the synthesis top.
 
-For the standalone audio test, use `audio.v` and `audio_test.v` with
-`audio_test` as the synthesis top and only `audio_test.xdc` enabled. The game
-and audio test have different top-level ports. Loading both constraint
-files into one run leaves some `get_ports` queries empty and produces
-`set_property` warnings.
+```text
+clock.v          vga.v          veribeat.v
+input.v          notes.v        control.v
+tile_mask.v      display.v      score.v
+game_session.v   audio.v
+```
 
-If you copied sources into the Vivado project, make sure the active
-constraints use the updated copy. For an unsupported-command warning,
-open the file and line shown in the synthesis log. Keep Tcl control flow
-such as `if` in a separate Tcl script and keep pin assignments in the XDC.
+Add `notes_config.vh` as a Verilog header and its directory to the project's
+Verilog include directories. Add `notes_data.mem` as a Memory Initialization
+File. The top-level `CHART_FILE` parameter defaults to `notes_data.mem`.
+For simulation, run from the repository root. If a Vivado flow cannot
+resolve the memory file, set `CHART_FILE` to its absolute path or place the
+file in the run directory. Verify the synthesis log successfully reads it.
 
-### Numpad interface
+Use **only `basys3.xdc`** as the active constraint file. UART, board buttons,
+and status LED pins from `audio_test.xdc` have been consolidated into it.
+The old audio-test XDC has been removed. The standalone test's switches
+are unused by the integrated game and have no active constraints. The
+legacy `audio_test.v` remains available as a standalone test design, which
+requires a constraint set matching its own ports.
 
-Connect the PmodKYPD to header JB using the existing pin assignments in
-`basys3.xdc`. Add `input.v` alongside the game and VGA sources in Vivado.
-The default `veribeat` top scans the keypad and shows its bottom-row key
-labels on the VGA pads.
+If the Vivado project copied sources, update the active project copies.
+Reset synthesis and implementation after updating the RTL. Check post-route
+setup/hold timing and inferred ROM/RAM resources before generating a bitstream.
+Testbench files belong under Simulation Sources.
 
-| Lane (left to right) | 1 | 2 | 3 | 4 |
+### Keypad and audio controls
+
+Connect the PmodKYPD to JB. The scanner sends synchronized, debounced pulses.
+The controller buffers pulses even while scanning the chart.
+
+| Lane, left to right | 1 | 2 | 3 | 4 |
 | --- | --- | --- | --- | --- |
 | Key | `0` | `F` | `E` | `D` |
 
-The scanner and game share the 100 MHz clock and synchronized reset. The
-scanner sends a one-cycle pulse per debounced press. The game buffers those
-pulses until the next VGA frame and can judge presses on multiple lanes in
-the same frame. At the default scan rate, two matching sweeps debounce each press. The
-key column and scan phase affect when the pulse arrives.
+Start the laptop player before resetting the FPGA.
 
 ```sh
+python3 audio/audio_player.py
+```
+
+It uses the existing USB-UART protocol at 115200 baud to play
+`audio/songs/song_0.mp3`. After reset, the FPGA stops previous playback,
+loads the chart's song ID, waits for the player's ready response, and runs
+a 1.4-second visual pre-roll before sending PLAY. The song clock uses the
+100 MHz oscillator to count milliseconds. Audio startup latency needs
+on-board calibration using `audio_offset_ms`.
+
+| Board button | Action |
+| --- | --- |
+| Center | Reset the FPGA game and audio interface |
+| Up | Stop, reload, and restart the chart |
+| Left | Pause chart time and audio |
+| Right | Resume |
+| Down | Stop |
+
+LEDs 0–10 show the binary score. LEDs 11–15 show running, paused, finished,
+audio failure, and renderer deadline failure respectively. An audio failure
+requires a restart after correcting the player or song file. The game ends
+when the configured track duration has elapsed, all notes have resolved,
+and the feedback tail has elapsed.
+
+### Architecture and simulation
+
+`notes.v` supplies synchronous chart ROM. `control.v` scans it twice per
+frame to judge notes and paint the next tile mask. `tile_mask.v` stores two
+banks of four lane masks. A complete bank is published at VGA line 47,
+before the playfield starts at line 48. An incomplete frame sets LED 15
+and preserves the previous bank. The renderer uses distributed-memory row
+reads, keeping the VGA timing interface's existing RGB/sync alignment.
+
+Run the following commands from the repository root with Icarus Verilog.
+The large-chart test populates a synthetic ROM in simulation, including a
+maximum-density 1,024-note frame and a full game scoring 1024.
+
+```sh
+python3 -m unittest discover -s tests -p 'test_*.py'
 iverilog -g2005 -Wall -s game_tb -o /tmp/veribeat-game-test \
-  clock.v vga.v veribeat.v input.v notes.v control.v score.v display.v tests/game_tb.v
+  notes.v control.v tile_mask.v score.v display.v tests/game_tb.v
 vvp -N /tmp/veribeat-game-test
+iverilog -g2005 -Wall -s chart_sizes_tb -o /tmp/veribeat-sizes-test \
+  notes.v control.v score.v tests/chart_sizes_tb.v
+vvp -N /tmp/veribeat-sizes-test
+iverilog -g2005 -Wall -s session_tb -o /tmp/veribeat-session-test \
+  game_session.v tests/session_tb.v
+vvp -N /tmp/veribeat-session-test
+iverilog -g2005 -Wall -s integration_tb -o /tmp/veribeat-integration-test \
+  clock.v vga.v veribeat.v input.v notes.v control.v tile_mask.v \
+  score.v display.v audio.v game_session.v tests/integration_tb.v
+vvp -N /tmp/veribeat-integration-test
 iverilog -g2005 -Wall -s keypad_tb -o /tmp/veribeat-keypad-test input.v tests/keypad_tb.v
 vvp -N /tmp/veribeat-keypad-test
 ```
+
+The integration simulation checks UART STOP/LOAD/ready, a real scanned keypad
+press, scoring, and publication using the VGA raster. It advances song time
+for the test. The session simulation checks the countdown, pause/resume,
+restart, finish, and error handling. Physical audio alignment and Vivado
+timing closure require board/tool verification.
 
 ## VGA diagnostic (Basys 3)
 

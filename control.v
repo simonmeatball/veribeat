@@ -1,144 +1,198 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-module control (
-    input  wire        clk,
-    input  wire        reset,
-    input  wire        frame_tick,
-    input  wire [3:0]  lane_press,
-    input  wire [15:0] lanes,
-    input  wire [79:0] targets,
-    output wire [7:0]  visible,
-    output reg  [71:0] tile_bottoms,
-    output reg  [15:0] pulse_ages,
-    output reg  [3:0]  pulse_hit,
-    output reg  [3:0]  hits
+module control #(
+    parameter integer NOTE_COUNT = 8,
+    parameter integer PRE_ROLL_MS = 1400,
+    parameter integer HIT_WINDOW_MS = 100
+) (
+    input wire clk,
+    input wire reset,
+    input wire frame_tick,
+    input wire publish_tick,
+    input wire running,
+    input wire [31:0] elapsed_ms,
+    input wire [3:0] lane_press,
+    output wire [9:0] chart_address,
+    output wire chart_enable,
+    input wire [39:0] chart_data,
+    output reg front_bank,
+    output reg front_valid,
+    output wire mask_write,
+    output wire mask_clear,
+    output wire [10:0] mask_address,
+    output wire [1:0] mask_bits,
+    output reg [15:0] pulse_ages,
+    output reg [3:0] pulse_hit,
+    output reg [3:0] hits,
+    output reg [10:0] resolved_count,
+    output reg overrun
 );
-    localparam [8:0] HIT_Y = 9'd404;
-    localparam [8:0] FALL_STEP = 9'd5;
-    localparam [8:0] FIELD_TOP = 9'd48;
-    // Render the note once its bottom reaches the visible field.
-    localparam [9:0] VISIBLE_LEAD = (HIT_Y - FIELD_TOP - 1) / FALL_STEP;
-    localparam [9:0] WINDOW = 10'd6;
-    localparam [2:0] NO_MATCH = WINDOW + 1;
-    localparam PULSE_FRAMES = 12;
-    localparam LAST_FRAME = 340;
-
-    reg [9:0] frame;
-    reg [7:0] resolved;
-    wire [7:0] entered;
-    assign visible = entered & ~resolved;
-    reg [3:0] previous_press;
+    localparam IDLE=0, CLEAR=1, REQUEST=2, WAIT_ROM=3, JUDGE=4,
+               COMMIT=5, GEOMETRY=6, PAINT=7, READY=8;
+    reg [3:0] state;
+    reg painting;
+    reg [10:0] index;
+    reg [10:0] clear_address;
+    reg [1023:0] resolved;
+    reg signed [32:0] snapshot_time;
+    reg signed [32:0] delta;
     reg [3:0] pending_press;
-    // Catch rising edges at 100 MHz, including an edge on frame_tick itself.
-    wire [3:0] pressed = lane_press & ~previous_press;
-    wire [3:0] frame_press = pending_press | pressed;
-
-    reg [7:0] resolved_next;
-    reg [3:0] misses;
-    wire [7:0] in_window;
-    wire [7:0] at_deadline;
-    wire [23:0] distances;
-
-    genvar note;
-    generate
-        for (note = 0; note < 8; note = note + 1) begin : note_state
-            wire [9:0] target = targets[10*note +: 10];
-            wire [10:0] deadline = {1'b0, target} + {1'b0, WINDOW};
-            wire [9:0] earliest = target >= WINDOW ? target - WINDOW : 10'd0;
-            assign in_window[note] = frame >= earliest && {1'b0, frame} <= deadline;
-            assign at_deadline[note] = {1'b0, frame} >= deadline;
-
-            // Within the window the signed difference fits in four bits.
-            wire [3:0] offset = frame[3:0] - target[3:0];
-            wire [2:0] magnitude = offset[3] ? -offset[2:0] : offset[2:0];
-            assign distances[3*note +: 3] = magnitude;
-
-            reg entered_field;
-            assign entered[note] = entered_field;
-            always @(posedge clk) begin
-                if (reset) begin
-                    entered_field <= target <= VISIBLE_LEAD;
-                    // Off-screen positions can wrap. The visible interval
-                    // is wholly within the 9-bit coordinate range.
-                    tile_bottoms[9*note +: 9] <= HIT_Y - FALL_STEP * target[8:0];
-                end else if (frame_tick && frame < LAST_FRAME) begin
-                    if (frame == target - VISIBLE_LEAD - 10'd1)
-                        entered_field <= 1'b1;
-                    tile_bottoms[9*note +: 9] <= tile_bottoms[9*note +: 9] + FALL_STEP;
-                end
-            end
-        end
-    endgenerate
-    reg [11:0] best_slots;
-    reg [11:0] best_distances;
-    integer slot;
+    reg [3:0] captured_press;
+    reg [3:0] missed;
+    reg [3:0] candidate_valid;
+    reg [9:0] candidate_index [0:3];
+    reg [6:0] candidate_distance [0:3];
+    reg [8:0] paint_row;
+    reg [8:0] tile_bottom;
+    reg [8:0] tile_top;
+    reg [1:0] paint_lane;
+    reg [3:0] selected_hits;
+    reg [2:0] hit_count;
     integer lane;
-    reg [2:0] distance;
-    integer pad;
+
+    wire [1:0] note_lane = chart_data[1:0];
+    wire signed [32:0] next_delta = snapshot_time - $signed({1'b0, chart_data[33:2]});
+    wire eligible = delta >= -HIT_WINDOW_MS && delta <= HIT_WINDOW_MS;
+    wire [6:0] distance = delta < 0 ? -delta[6:0] : delta[6:0];
+    // Only evaluate this narrow geometry for notes within the visible interval.
+    wire signed [15:0] offset_pixels = ($signed(delta[15:0]) * 16'sd5) >>> 4;
+    wire signed [15:0] bottom = 16'sd404 + offset_pixels;
+
+    assign chart_address = index[9:0];
+    assign chart_enable = state == REQUEST;
+    assign mask_write = state == CLEAR || state == PAINT;
+    assign mask_clear = state == CLEAR;
+    assign mask_address = state == CLEAR ? clear_address : {paint_lane, paint_row};
+    assign mask_bits = {paint_row < tile_top + 9'd2 || paint_row >= tile_bottom - 9'd2, 1'b1};
 
     always @* begin
-        resolved_next = resolved;
-        hits = 0;
-        misses = 0;
-        best_slots = 0;
-        best_distances = {4{NO_MATCH}};
-
-        for (slot = 0; slot < 8; slot = slot + 1) begin
-            lane = {30'b0, lanes[2*slot +: 2]};
-            distance = distances[3*slot +: 3];
-            if (!resolved[slot] && in_window[slot] &&
-                distance < best_distances[3*lane +: 3]) begin
-                best_slots[3*lane +: 3] = slot[2:0];
-                best_distances[3*lane +: 3] = distance;
-            end
-        end
-
-        for (pad = 0; pad < 4; pad = pad + 1) begin
-            if (frame_press[pad]) begin
-                if (best_distances[3*pad +: 3] <= WINDOW) begin
-                    hits[pad] = 1;
-                    resolved_next[best_slots[3*pad +: 3]] = 1;
-                end else begin
-                    misses[pad] = 1;
-                end
-            end
-        end
-        // Accept a hit on the last eligible frame before expiring the note.
-        for (slot = 0; slot < 8; slot = slot + 1) begin
-            if (at_deadline[slot] && !resolved_next[slot]) begin
-                resolved_next[slot] = 1;
-                misses[lanes[2*slot +: 2]] = 1;
-            end
-        end
+        selected_hits = candidate_valid & captured_press;
+        hit_count = {2'b0,selected_hits[0]} + {2'b0,selected_hits[1]} +
+                    {2'b0,selected_hits[2]} + {2'b0,selected_hits[3]};
     end
 
-    integer effect_lane;
     always @(posedge clk) begin
         if (reset) begin
-            previous_press <= 0;
-            pending_press <= 0;
-            frame <= 0;
+            state <= IDLE;
+            painting <= 0;
+            index <= 0;
+            clear_address <= 0;
             resolved <= 0;
-            pulse_ages <= {4{4'd12}};
+            snapshot_time <= 0;
+            delta <= 0;
+            pending_press <= 0;
+            captured_press <= 0;
+            missed <= 0;
+            candidate_valid <= 0;
+            front_bank <= 0;
+            front_valid <= 0;
+            pulse_ages <= 16'hcccc;
             pulse_hit <= 0;
+            hits <= 0;
+            resolved_count <= 0;
+            overrun <= 0;
+            paint_row <= 0;
+            tile_top <= 0;
+            tile_bottom <= 0;
+            paint_lane <= 0;
+            for (lane=0; lane<4; lane=lane+1) begin
+                candidate_index[lane] <= 0;
+                candidate_distance[lane] <= 127;
+            end
         end else begin
-            previous_press <= lane_press;
-            pending_press <= frame_press;
+            hits <= 0;
+            if (running) pending_press <= pending_press | lane_press;
+            else pending_press <= 0;
             if (frame_tick) begin
-                pending_press <= 0;
-                if (frame < LAST_FRAME)
-                    frame <= frame + 1'b1;
-                resolved <= resolved_next;
-
-                for (effect_lane = 0; effect_lane < 4; effect_lane = effect_lane + 1) begin
-                    if (hits[effect_lane] || misses[effect_lane]) begin
-                        pulse_ages[4*effect_lane +: 4] <= 0;
-                        pulse_hit[effect_lane] <= hits[effect_lane];
-                    end else if (pulse_ages[4*effect_lane +: 4] < PULSE_FRAMES) begin
-                        pulse_ages[4*effect_lane +: 4] <=
-                            pulse_ages[4*effect_lane +: 4] + 1'b1;
+                for (lane=0; lane<4; lane=lane+1)
+                    if (pulse_ages[4*lane +: 4] < 12)
+                        pulse_ages[4*lane +: 4] <= pulse_ages[4*lane +: 4] + 1'b1;
+                if (running && state == IDLE) begin
+                    snapshot_time <= $signed({1'b0,elapsed_ms}) - PRE_ROLL_MS;
+                    captured_press <= pending_press | lane_press;
+                    pending_press <= 0;
+                    missed <= 0;
+                    candidate_valid <= 0;
+                    for (lane=0; lane<4; lane=lane+1)
+                        candidate_distance[lane] <= 127;
+                    clear_address <= 0;
+                    painting <= 0;
+                    state <= CLEAR;
+                end
+            end
+            case (state)
+                CLEAR: begin
+                    if (clear_address == 2047) begin
+                        index <= 0;
+                        state <= NOTE_COUNT == 0 ? COMMIT : REQUEST;
+                    end else clear_address <= clear_address + 1'b1;
+                end
+                REQUEST: state <= WAIT_ROM;
+                WAIT_ROM: begin
+                    // Register the time difference before judgment or geometry.
+                    delta <= next_delta;
+                    state <= painting ? GEOMETRY : JUDGE;
+                end
+                JUDGE: begin
+                    if (chart_data[39] && !resolved[index[9:0]]) begin
+                        if (eligible && captured_press[note_lane] &&
+                            distance < candidate_distance[note_lane]) begin
+                            candidate_valid[note_lane] <= 1;
+                            candidate_index[note_lane] <= index[9:0];
+                            candidate_distance[note_lane] <= distance;
+                        end
+                        // The inclusive late boundary is judged before expiry.
+                        if (delta > HIT_WINDOW_MS) begin
+                            resolved[index[9:0]] <= 1;
+                            resolved_count <= resolved_count + 1'b1;
+                            missed[note_lane] <= 1;
+                        end
                     end
+                    if (index + 11'd1 == NOTE_COUNT) state <= COMMIT;
+                    else begin index <= index + 1'b1; state <= REQUEST; end
+                end
+                COMMIT: begin
+                    hits <= selected_hits;
+                    resolved_count <= resolved_count + hit_count;
+                    for (lane=0; lane<4; lane=lane+1) begin
+                        if (selected_hits[lane]) resolved[candidate_index[lane]] <= 1;
+                        if (selected_hits[lane] || missed[lane] || captured_press[lane]) begin
+                            pulse_ages[4*lane +: 4] <= 0;
+                            pulse_hit[lane] <= selected_hits[lane];
+                        end
+                    end
+                    painting <= 1;
+                    index <= 0;
+                    state <= NOTE_COUNT == 0 ? READY : REQUEST;
+                end
+                GEOMETRY: begin
+                    if (chart_data[39] && !resolved[index[9:0]] &&
+                        delta >= -1200 && delta <= HIT_WINDOW_MS && bottom > 48) begin
+                        tile_top <= bottom - 16'sd36;
+                        tile_bottom <= bottom[8:0];
+                        paint_row <= bottom < 84 ? 9'd48 : bottom - 16'sd36;
+                        paint_lane <= note_lane;
+                        state <= PAINT;
+                    end else if (index + 11'd1 == NOTE_COUNT) state <= READY;
+                    else begin index <= index + 1'b1; state <= REQUEST; end
+                end
+                PAINT: begin
+                    if (paint_row + 9'd1 == tile_bottom) begin
+                        if (index + 11'd1 == NOTE_COUNT) state <= READY;
+                        else begin index <= index + 1'b1; state <= REQUEST; end
+                    end else paint_row <= paint_row + 1'b1;
+                end
+                default: begin end
+            endcase
+            if (publish_tick && state != IDLE) begin
+                if (state == READY) begin
+                    front_bank <= ~front_bank;
+                    front_valid <= 1;
+                    state <= IDLE;
+                end else begin
+                    overrun <= 1;
+                    state <= IDLE;
                 end
             end
         end

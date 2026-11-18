@@ -6,12 +6,10 @@ module display #(
 ) (
     input  wire [9:0]  x,
     input  wire [9:0]  y,
-    input  wire [15:0] lanes,
-    input  wire [7:0]  visible,
-    input  wire [71:0] tile_bottoms,
+    input  wire [1:0] tile_pixel,
     input  wire [15:0] pulse_ages,
     input  wire [3:0]  pulse_hit,
-    input  wire [3:0]  points,
+    input  wire [15:0] digits,
     output reg  [11:0] color
 );
     localparam FIELD_LEFT = 64;
@@ -78,19 +76,12 @@ module display #(
     wire [9:0] pulse_top = PAD_TOP - spread;
     wire [9:0] pulse_bottom = PAD_BOTTOM - 1 + spread;
 
-    integer slot;
-    reg [9:0] bottom;
+    wire [1:0] digit_index = x[5:4];
+    wire [3:0] score_digit = digits[4*(3-digit_index) +: 4];
     always @* begin
         color = 12'h012;
-        bottom = 0;
-        // A segmented score indicator beside the numeric count.
-        if (y >= 19 && y < 31 && x >= 64 && x < 160) begin
-            color = 12'h214;
-            if (x[1:0] != 2'b11 && x - 10'd64 < 12 * points)
-                color = 12'h2bd;
-        end
-        if (x >= 172 && x < 184 && y >= 15 && y < 35 &&
-            glyph_pixel(digit(points), x[4:0] - 5'd12, y[4:0] - 5'd15))
+        if (x >= 64 && x < 128 && y >= 15 && y < 35 && x[3:0] < 12 &&
+            glyph_pixel(digit(score_digit), {1'b0,x[3:0]}, y[4:0] - 5'd15))
             color = 12'hfff;
 
         if (x >= FIELD_LEFT && x < FIELD_RIGHT && y >= FIELD_TOP && y < 470) begin
@@ -100,15 +91,10 @@ module display #(
             if (lane_x == 0 || lane_x == 127)
                 color = 12'h436;
 
-            for (slot = 0; slot < 8; slot = slot + 1) begin
-                bottom = {1'b0, tile_bottoms[9*slot +: 9]};
-                if (visible[slot] && lanes[2*slot +: 2] == pixel_lane &&
-                    lane_x >= 16 && lane_x < 112 && y < bottom && y + 10'd36 >= bottom) begin
-                    color = 12'h158;
-                    if (lane_x < 18 || lane_x >= 110 ||
-                        y + 10'd2 >= bottom || y + 10'd34 < bottom)
-                        color = 12'h6ef;
-                end
+            if (tile_pixel[0] && lane_x >= 16 && lane_x < 112) begin
+                color = 12'h158;
+                if (tile_pixel[1] || lane_x < 18 || lane_x >= 110)
+                    color = 12'h6ef;
             end
 
             if (y == HIT_Y)

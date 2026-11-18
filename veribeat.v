@@ -1,12 +1,19 @@
 `timescale 1ns / 1ps
 `default_nettype none
+`include "notes_config.vh"
 
 // Basys 3 VGA game, with the original diagnostic available at elaboration.
 module veribeat #(
     parameter integer START_X = 1,
     parameter integer START_Y = 1,
     parameter DIAGNOSTIC = 0,
-    parameter integer KEYPAD_COL_CYCLES = 100_000
+    parameter integer KEYPAD_COL_CYCLES = 100_000,
+    parameter CHART_FILE = "notes_data.mem",
+    parameter integer NOTE_COUNT = `CHART_NOTE_COUNT,
+    parameter integer DURATION_MS = `CHART_DURATION_MS,
+    parameter integer SONG_ID = `CHART_SONG_ID,
+    parameter integer CYCLES_PER_MS = 100000,
+    parameter integer UART_CLKS_PER_BIT = 868
 ) (
     input  wire       clk,
     input  wire       btnC,
@@ -16,7 +23,11 @@ module veribeat #(
     output wire [3:0] vgaGreen,
     output wire [3:0] vgaBlue,
     input  wire [3:0] rows,
-    output wire [3:0] cols
+    output wire [3:0] cols,
+    input wire btnU, btnL, btnR, btnD,
+    input wire RsRx,
+    output wire RsTx,
+    output wire [15:0] led
 );
     wire reset;
     wire pixel_tick;
@@ -98,17 +109,44 @@ module veribeat #(
         if (DIAGNOSTIC) begin : diagnostic
             assign video_color = color;
             assign cols = 4'bzzzz;
+            assign RsTx = 1'b1;
+            assign led = 0;
         end else begin : game
             localparam [15:0] LANE_KEYS = 16'hDEF0;
             wire [3:0] lane_press;
-            wire [15:0] lanes;
-            wire [79:0] targets;
-            wire [7:0] visible;
-            wire [71:0] tile_bottoms;
-            wire [15:0] pulse_ages;
-            wire [3:0] pulse_hit;
-            wire [3:0] hits;
-            wire [3:0] points;
+            wire [9:0] chart_address;
+            wire chart_enable;
+            wire [39:0] chart_data;
+            wire front_bank, front_valid, mask_write, mask_clear, overrun;
+            wire [10:0] mask_address;
+            wire [1:0] mask_bits, tile_pixel;
+            wire [15:0] pulse_ages, digits;
+            wire [3:0] pulse_hit, hits;
+            wire [10:0] points, resolved_count;
+            wire [31:0] elapsed_ms;
+            wire cmd_load, cmd_play, cmd_stop, cmd_pause, cmd_resume;
+            wire audio_ready, audio_error, audio_busy;
+            wire game_reset, running, paused, finished, failed;
+            wire reset_game = reset | game_reset;
+            wire [9:0] field_x = x - 10'd64;
+            wire publish_tick = pixel_tick && x == 0 && y == 47;
+            assign led = {overrun, failed, finished, paused, running, points};
+
+            audio #(.CLKS_PER_BIT(UART_CLKS_PER_BIT)) soundtrack (
+                .clk(clk), .rst(reset), .cmd_load(cmd_load), .song_id(SONG_ID[3:0]),
+                .cmd_play(cmd_play), .cmd_stop(cmd_stop), .cmd_pause(cmd_pause),
+                .cmd_resume(cmd_resume), .audio_ready(audio_ready), .audio_error(audio_error),
+                .busy(audio_busy), .rx_data(), .rx_valid(), .RsRx(RsRx), .RsTx(RsTx)
+            );
+            game_session #(.CYCLES_PER_MS(CYCLES_PER_MS), .DURATION_MS(DURATION_MS),
+                           .NOTE_COUNT(NOTE_COUNT)) session (
+                .clk(clk), .reset(reset), .buttons({btnD,btnR,btnL,btnU}),
+                .audio_ready(audio_ready), .audio_error(audio_error), .audio_busy(audio_busy),
+                .resolved_count(resolved_count), .cmd_load(cmd_load), .cmd_play(cmd_play),
+                .cmd_stop(cmd_stop), .cmd_pause(cmd_pause), .cmd_resume(cmd_resume),
+                .game_reset(game_reset), .running(running), .elapsed_ms(elapsed_ms),
+                .paused(paused), .finished(finished), .failed(failed)
+            );
 
             keypad #(
                 .COL_CYCLES(KEYPAD_COL_CYCLES),
@@ -118,21 +156,27 @@ module veribeat #(
                 .clk(clk), .reset(reset), .rows(rows), .cols(cols),
                 .keys(), .pressed(), .released(), .lane_press(lane_press)
             );
-            notes chart (.lanes(lanes), .targets(targets));
-            control gameplay (
-                .clk(clk), .reset(reset), .frame_tick(frame_tick),
-                .lane_press(lane_press), .lanes(lanes), .targets(targets),
-                .visible(visible), .tile_bottoms(tile_bottoms),
-                .pulse_ages(pulse_ages), .pulse_hit(pulse_hit), .hits(hits)
+            notes #(.CHART_FILE(CHART_FILE)) chart (
+                .clk(clk), .enable(chart_enable), .address(chart_address), .data(chart_data)
             );
-            score tally (
-                .clk(clk), .reset(reset), .frame_tick(frame_tick),
-                .hits(hits), .points(points)
+            control #(.NOTE_COUNT(NOTE_COUNT)) gameplay (
+                .clk(clk), .reset(reset_game), .frame_tick(frame_tick),
+                .publish_tick(publish_tick), .running(running), .elapsed_ms(elapsed_ms),
+                .lane_press(lane_press), .chart_address(chart_address), .chart_enable(chart_enable),
+                .chart_data(chart_data), .front_bank(front_bank), .front_valid(front_valid),
+                .mask_write(mask_write), .mask_clear(mask_clear), .mask_address(mask_address),
+                .mask_bits(mask_bits), .pulse_ages(pulse_ages), .pulse_hit(pulse_hit),
+                .hits(hits), .resolved_count(resolved_count), .overrun(overrun)
             );
+            tile_mask mask (
+                .clk(clk), .front_bank(front_bank), .write_enable(mask_write),
+                .clear_pixel(mask_clear), .write_address(mask_address), .write_bits(mask_bits),
+                .read_address({field_x[8:7],y[8:0]}), .pixel(tile_pixel)
+            );
+            score tally (.clk(clk), .reset(reset_game), .hits(hits), .points(points), .digits(digits));
             display #(.LANE_KEYS(LANE_KEYS)) renderer (
-                .x(x), .y(y), .lanes(lanes), .visible(visible),
-                .tile_bottoms(tile_bottoms), .pulse_ages(pulse_ages),
-                .pulse_hit(pulse_hit), .points(points), .color(video_color)
+                .x(x), .y(y), .tile_pixel(front_valid ? tile_pixel : 2'b0),
+                .pulse_ages(pulse_ages), .pulse_hit(pulse_hit), .digits(digits), .color(video_color)
             );
         end
     endgenerate

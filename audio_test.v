@@ -2,8 +2,9 @@
 // =============================================================================
 // audio_test.v - standalone Basys 3 hardware test for audio.v
 //
-// Use with audio_test.xdc as the top module. Run audio_player.py on the
-// laptop, then:
+// Legacy standalone top. Supply constraints matching its ports for a board
+// build. The integrated game uses veribeat and basys3.xdc. Run
+// audio/audio_player.py on the laptop, then:
 //
 //   sw[3:0]  song id (0-9)
 //   sw[15]   reset (up = held in reset)
