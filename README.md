@@ -2,10 +2,31 @@
 
 ## Veribeat game (Basys 3)
 
+The home screen offers all three songs in one FPGA build. Press keypad `1`
+for Yoru ni Kakeru (song 0), `2` for APT. (song 1), or `3` for Sunflower
+(song 2). The selected song loads through the laptop audio player before
+play starts. At the end, the results screen shows hits, missed notes, and
+misclicks. Press any keypad key or board button to return home, then make
+a fresh song selection.
+
+A hit is a successfully judged note. A miss is a note that passes its late
+window. A misclick is a gameplay press without a matching note, including
+keys outside the four gameplay lanes. Multiple missed notes count
+individually even when they expire in the same frame. Menu selection,
+loading, pause, and results navigation produce no gameplay penalties.
+Misclick statistics saturate at the four-digit display limit of 9999.
+
 The game accepts up to 1,024 tap notes from a text chart. Press the matching
-bottom-row keypad key when a cyan tile reaches the purple line. The hit
-window is ±100 ms. A hit adds one point and flashes white. A missed note or
-unmatched press flashes red. The score supports 0–1024.
+bottom-row keypad key when the center of a cyan tile reaches the center of
+its bottom pad, aligned with the purple timing line. The hit window is
+±160 ms. A hit adds one point and flashes white. A missed note or unmatched
+press flashes red. The score supports 0–1024.
+
+Each press consumes the oldest eligible note in its lane. When two windows
+overlap, the later note stays available for another press. The judge stores
+the press timestamp so waiting for the next VGA frame does not shorten the
+late window. Holding a key produces one press. Expired notes are resolved
+after the selected hits.
 
 The supplied [song_0 chart](charts/song_0.txt) contains 854 notes matched to
 spectral attacks in `audio/songs/song_0.mp3`, YOASOBI's Yoru ni Kakeru. Analysis
@@ -23,6 +44,37 @@ the repository root. This also regenerates the chart ROM and configuration.
 
 ```sh
 python3 tools/match_song_chart.py audio/songs/song_0.mp3
+```
+
+### Additional track charts
+
+Both additional charts were analyzed from the corresponding MP3 files in
+`audio/songs/`. Their analysis records include the exact source hashes.
+
+| Song ID | Track | Notes | Approximate BPM | Accent chords |
+| --- | --- | ---: | ---: | ---: |
+| 1 | [APT.](charts/song_1.txt) — ROSÉ & Bruno Mars | 540 | 149 | 12 |
+| 2 | [Sunflower](charts/song_2.txt) — Post Malone & Swae Lee | 419 | 90 | 9 |
+
+Each chart has its own `.mem`, `_config.vh`, and `.analysis.json` alongside
+the TXT. Compile all three charts together after editing their TXT files.
+
+```sh
+python3 tools/compile_songs.py
+```
+
+This refreshes the menu's three ROM banks and shared metadata. The keypad
+selection controls both the chart bank and the song ID sent to the laptop.
+These are automatically arranged rhythm charts and need listening/playtesting
+and hardware latency calibration.
+
+To regenerate an individual arrangement into its own chart files, specify
+its song ID and output paths. For example, use the following for APT.
+
+```sh
+python3 tools/match_song_chart.py audio/songs/song_1.mp3 \
+  --song-id 1 --title 'ROSÉ & Bruno Mars - APT.' --chart charts/song_1.txt \
+  --memory charts/song_1.mem --config charts/song_1_config.vh
 ```
 
 ### Edit and compile charts
@@ -46,12 +98,14 @@ duplicates, metadata, and adjusted note times.
 Run from the repository root after editing a chart.
 
 ```sh
-python3 tools/compile_chart.py charts/song_0.txt
+python3 tools/compile_songs.py
 ```
 
-This generates `notes_data.mem` (1,024 padded 40-bit words) and
-`notes_config.vh` (note count, song ID, duration). `notes.v` reads the memory
-at build time. Rebuild and program the FPGA after changing the chart.
+This generates `charts/song_0.mem` through `charts/song_2.mem`, per-song
+configuration files, and `song_library_config.vh`. Each ROM contains 1,024
+padded 40-bit words. The shared header holds each song's note count and
+duration. Rebuild and program the FPGA after changing chart data. The
+standalone `compile_chart.py` tool is also available for single-chart tests.
 
 ### Vivado project setup
 
@@ -62,15 +116,17 @@ sources and set `veribeat` as the synthesis top.
 clock.v          vga.v          veribeat.v
 input.v          notes.v        control.v
 tile_mask.v      display.v      score.v
-game_session.v   audio.v
+game_session.v   audio.v        song_library.v
+menu_display.v
 ```
 
-Add `notes_config.vh` as a Verilog header and its directory to the project's
-Verilog include directories. Add `notes_data.mem` as a Memory Initialization
-File. The top-level `CHART_FILE` parameter defaults to `notes_data.mem`.
-For simulation, run from the repository root. If a Vivado flow cannot
-resolve the memory file, set `CHART_FILE` to its absolute path or place the
-file in the run directory. Verify the synthesis log successfully reads it.
+Add `song_library_config.vh` as a Verilog header and its directory to the
+project's Verilog include directories. Add all three `charts/song_N.mem`
+files as Memory Initialization Files. The `SONG0_FILE`, `SONG1_FILE`, and
+`SONG2_FILE` top-level parameters specify their paths. For simulation, run
+from the repository root. If Vivado cannot resolve a memory path, set the
+corresponding parameter to its absolute path. Verify that synthesis reads
+all three ROMs successfully.
 
 Use **only `basys3.xdc`** as the active constraint file. UART, board buttons,
 and status LED pins from `audio_test.xdc` have been consolidated into it.
@@ -99,30 +155,37 @@ Start the laptop player before resetting the FPGA.
 python3 audio/audio_player.py
 ```
 
-It uses the existing USB-UART protocol at 115200 baud to play
-`audio/songs/song_0.mp3`. After reset, the FPGA stops previous playback,
-loads the chart's song ID, waits for the player's ready response, and runs
+It uses the existing USB-UART protocol at 115200 baud to play the selected
+`audio/songs/song_N.mp3`. Reset opens the home screen. Selecting a song
+stops previous playback, loads its song ID, waits for the player's ready
+response, and runs
 a 1.4-second visual pre-roll before sending PLAY. The song clock uses the
 100 MHz oscillator to count milliseconds. Audio startup latency needs
 on-board calibration using `audio_offset_ms`.
 
 | Board button | Action |
 | --- | --- |
-| Center | Reset the FPGA game and audio interface |
+| Center | Reset to home |
 | Up | Stop, reload, and restart the chart |
 | Left | Pause chart time and audio |
 | Right | Resume |
-| Down | Stop |
+| Down | Stop and show results |
 
 LEDs 0–10 show the binary score. LEDs 11–15 show running, paused, finished,
 audio failure, and renderer deadline failure respectively. An audio failure
-requires a restart after correcting the player or song file. The game ends
+shows an error/results screen. Return home and select a song after correcting
+the player or song file. Any button on the results screen returns home. The game ends
 when the configured track duration has elapsed, all notes have resolved,
 and the feedback tail has elapsed.
 
 ### Architecture and simulation
 
-`notes.v` supplies synchronous chart ROM. `control.v` scans it twice per
+`song_library.v` selects one of three synchronous `notes.v` ROMs and its
+metadata. `game_session.v` controls home, loading, play, pause, and results.
+`menu_display.v` draws the home/loading/results screens with two 100 MHz
+pipeline stages that settle within the existing four-cycle pixel interval.
+`score.v` instances count hits, individual missed notes, and misclick events.
+`control.v` scans the selected chart twice per
 frame to judge notes and paint the next tile mask. `tile_mask.v` stores two
 banks of four lane masks. A complete bank is published at VGA line 47,
 before the playfield starts at line 48. An incomplete frame sets LED 15
@@ -138,24 +201,35 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 iverilog -g2005 -Wall -s game_tb -o /tmp/veribeat-game-test \
   notes.v control.v tile_mask.v score.v display.v tests/game_tb.v
 vvp -N /tmp/veribeat-game-test
+iverilog -g2005 -Wall -s hit_timing_tb -o /tmp/veribeat-hit-timing-test \
+  notes.v control.v tile_mask.v score.v tests/hit_timing_tb.v
+vvp -N /tmp/veribeat-hit-timing-test
 iverilog -g2005 -Wall -s chart_sizes_tb -o /tmp/veribeat-sizes-test \
   notes.v control.v score.v tests/chart_sizes_tb.v
 vvp -N /tmp/veribeat-sizes-test
 iverilog -g2005 -Wall -s session_tb -o /tmp/veribeat-session-test \
   game_session.v tests/session_tb.v
 vvp -N /tmp/veribeat-session-test
+iverilog -g2005 -Wall -s menu_display_tb -o /tmp/veribeat-menu-test \
+  menu_display.v tests/menu_display_tb.v
+vvp -N /tmp/veribeat-menu-test
+iverilog -g2005 -Wall -s stats_counter_tb -o /tmp/veribeat-stats-test \
+  score.v tests/stats_counter_tb.v
+vvp -N /tmp/veribeat-stats-test
 iverilog -g2005 -Wall -s integration_tb -o /tmp/veribeat-integration-test \
-  clock.v vga.v veribeat.v input.v notes.v control.v tile_mask.v \
-  score.v display.v audio.v game_session.v tests/integration_tb.v
+  clock.v vga.v veribeat.v input.v notes.v song_library.v control.v tile_mask.v \
+  score.v display.v menu_display.v audio.v game_session.v tests/integration_tb.v
 vvp -N /tmp/veribeat-integration-test
 iverilog -g2005 -Wall -s keypad_tb -o /tmp/veribeat-keypad-test input.v tests/keypad_tb.v
 vvp -N /tmp/veribeat-keypad-test
 ```
 
-The integration simulation checks UART STOP/LOAD/ready, a real scanned keypad
-press, scoring, and publication using the VGA raster. It advances song time
-for the test. The session simulation checks the countdown, pause/resume,
-restart, finish, and error handling. Physical audio alignment and Vivado
+The integration simulation checks physical matrix song selection, UART
+STOP/LOAD/ready, gameplay presses, all three counters, results, and returning
+home while holding the return key. It advances song time for the test. Use
+`-Pintegration_tb.SONG_ID=1` or `=2` to exercise the other selections. The
+session simulation checks all menu selections, countdown, pause/resume,
+finish, navigation, and error handling. Physical audio alignment and Vivado
 timing closure require board/tool verification.
 
 ## VGA diagnostic (Basys 3)

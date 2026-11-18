@@ -15,7 +15,10 @@ module game_tb;
     reg [10:0] read_address=0;
     wire [15:0] ages, digits;
     wire [3:0] hit_color, hits;
-    wire [10:0] points;
+    wire [10:0] points, miss_count;
+    wire note_miss;
+    wire [3:0] misclicks;
+    wire [10:0] misclick_count;
     integer i, group, cycles;
     reg [31:0] target;
     reg [9:0] x=0, y=0;
@@ -26,14 +29,17 @@ module game_tb;
     control #(.NOTE_COUNT(1024)) dut (
         .clk(clk), .reset(reset), .frame_tick(frame_tick), .publish_tick(publish_tick),
         .running(1'b1), .elapsed_ms(elapsed), .lane_press(press),
-        .chart_address(address), .chart_enable(enable), .chart_data(data),
+        .chart_address(address), .chart_enable(enable), .chart_data(data),.chart_note_count(11'd0),
         .front_bank(front), .front_valid(valid), .mask_write(write_enable),
         .mask_clear(clear_pixel), .mask_address(write_address), .mask_bits(bits),
         .pulse_ages(ages), .pulse_hit(hit_color), .hits(hits),
-        .resolved_count(resolved_count), .overrun(overrun)
+        .resolved_count(resolved_count), .overrun(overrun),
+        .note_miss(note_miss), .misclicks(misclicks)
     );
     tile_mask mask(clk,front,write_enable,clear_pixel,write_address,bits,read_address,pixel);
     score tally(clk,reset,hits,points,digits);
+    score missed(.clk(clk),.reset(reset),.hits({3'b0,note_miss}),.points(miss_count),.digits());
+    score invalid_presses(.clk(clk),.reset(reset),.hits(misclicks),.points(misclick_count),.digits());
     display renderer(x,y,valid ? pixel : 2'b0,ages,hit_color,digits,color);
 
     task build_frame;
@@ -73,10 +79,10 @@ module game_tb;
         if(pixel !== 2'b11) $stop;
         read_address={2'd0,9'd380}; #1;
         if(pixel[0] !== 1'b1) $stop;
-        build_frame(4500,4'b1111); // closest notes at +100 ms, not first notes
-        if(points !== 4 || resolved_count !== 4) $stop;
+        build_frame(4500,4'b1111); // one oldest eligible note per pressed lane
+        if(points !== 4 || resolved_count !== 4 || dut.resolved[3:0] !== 4'hf) $stop;
         build_frame(5000,0);
-        if(resolved_count !== 1024 || points !== 4) $stop;
+        if(resolved_count !== 1024 || points !== 4 || miss_count !== 1020) $stop;
 
         // A full chart with four-note chords every 500 ms.
         for(i=0;i<1024;i=i+1) begin
@@ -84,27 +90,27 @@ module game_tb;
             chart.chart[i]=(40'h8000000000 | ({8'b0,target} << 2) | (i%4));
         end
         restart;
-        build_frame(4299,4'b1111); // 101 ms early
-        if(points !== 0 || hit_color !== 0) $stop;
+        build_frame(4239,4'b1111); // 161 ms early
+        if(points !== 0 || hit_color !== 0 || misclick_count !== 4) $stop;
         for(group=0;group<256;group=group+1) begin
             // Alternate inclusive early/late boundaries and exact hits.
             target=4400+group*500;
-            if(group%3==0) target=target-100;
-            if(group%3==1) target=target+100;
+            if(group%3==0) target=target-160;
+            if(group%3==1) target=target+160;
             build_frame(target,4'b1111);
             if(points !== (group+1)*4 || resolved_count !== (group+1)*4) begin
                 $display("FAIL score at chord %0d: %0d",group,points); $stop;
             end
         end
-        if(points !== 1024 || digits !== 16'h1024) $stop;
+        if(points !== 1024 || digits !== 16'h1024 || miss_count !== 0 || misclick_count !== 4) $stop;
         // Last address was fetched and scored. All resolved masks are empty.
         read_address={2'd3,9'd403}; #1; if(pixel !== 0) $stop;
         x=78; y=430; #1; if(color !== 12'hfff) $stop;
         restart;
-        build_frame(4501,0); // 101 ms late: four misses
+        build_frame(4561,0); // 161 ms late: four misses
         if(points !== 0 || resolved_count !== 4) $stop;
         x=78; y=430; #1; if(color !== 12'hf00) $stop;
-        $display("PASS: 1024 notes, dense masks, closest-note selection, boundaries, score 1024, white/red effects");
+        $display("PASS: 1024 notes, dense masks, oldest-note selection, boundaries, score 1024, white/red effects");
         $finish;
     end
 endmodule

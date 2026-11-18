@@ -15,7 +15,7 @@ module display #(
     localparam FIELD_LEFT = 64;
     localparam FIELD_RIGHT = 576;
     localparam FIELD_TOP = 48;
-    localparam HIT_Y = 404;
+    localparam HIT_Y = 433;
     localparam PAD_TOP = 410;
     localparam PAD_BOTTOM = 456;
 

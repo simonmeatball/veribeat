@@ -154,6 +154,9 @@ def main():
     parser.add_argument('audio', type=Path)
     parser.add_argument('--chart', type=Path, default=Path('charts/song_0.txt'))
     parser.add_argument('--song-id', type=int, choices=range(10), default=0)
+    parser.add_argument('--title', help='Track title for the chart comment')
+    parser.add_argument('--memory', type=Path, default=Path('notes_data.mem'))
+    parser.add_argument('--config', type=Path, default=Path('notes_config.vh'))
     args = parser.parse_args()
     analysis = analyze(args.audio)
     ordered, kinds = select_events(analysis)
@@ -162,7 +165,7 @@ def main():
         raise ValueError('Selected chart exceeds hardware capacity')
     digest = hashlib.sha256(args.audio.read_bytes()).hexdigest()
     lines = [
-        '# YOASOBI - Yoru ni Kakeru',
+        f'# {args.title or args.audio.stem}',
         f'# Rhythm chart analyzed from {args.audio.as_posix()}',
         f'# MP3 SHA-256 {digest}',
         f'# Measured tempo approximately {analysis["tempo"]:.3f} BPM.',
@@ -175,7 +178,7 @@ def main():
     lines.extend(f'{time} {lane}' for time, lane in notes)
     args.chart.parent.mkdir(parents=True, exist_ok=True)
     args.chart.write_text('\n'.join(lines)+'\n')
-    compile_chart(args.chart, Path('notes_data.mem'), Path('notes_config.vh'))
+    compile_chart(args.chart, args.memory, args.config)
     event_times = np.array([analysis['times'][index] for index in ordered])
     phase = analysis['phase']
     subdivision = analysis['period']/4

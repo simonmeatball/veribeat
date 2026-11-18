@@ -1,6 +1,5 @@
 `timescale 1ns / 1ps
 `default_nettype none
-`include "notes_config.vh"
 
 // Basys 3 VGA game, with the original diagnostic available at elaboration.
 module veribeat #(
@@ -8,10 +7,9 @@ module veribeat #(
     parameter integer START_Y = 1,
     parameter DIAGNOSTIC = 0,
     parameter integer KEYPAD_COL_CYCLES = 100_000,
-    parameter CHART_FILE = "notes_data.mem",
-    parameter integer NOTE_COUNT = `CHART_NOTE_COUNT,
-    parameter integer DURATION_MS = `CHART_DURATION_MS,
-    parameter integer SONG_ID = `CHART_SONG_ID,
+    parameter SONG0_FILE = "charts/song_0.mem",
+    parameter SONG1_FILE = "charts/song_1.mem",
+    parameter SONG2_FILE = "charts/song_2.mem",
     parameter integer CYCLES_PER_MS = 100000,
     parameter integer UART_CLKS_PER_BIT = 868
 ) (
@@ -114,6 +112,19 @@ module veribeat #(
         end else begin : game
             localparam [15:0] LANE_KEYS = 16'hDEF0;
             wire [3:0] lane_press;
+            wire [15:0] key_pressed;
+            wire [1:0] song_index;
+            wire [10:0] chart_note_count;
+            wire [31:0] chart_duration_ms;
+            wire home, loading;
+            wire note_miss;
+            wire [3:0] lane_misclicks;
+            wire [15:0] miss_digits, misclick_digits;
+            wire [10:0] miss_count;
+            wire [13:0] misclick_count;
+            wire [11:0] game_color, menu_color;
+            reg [1:0] screen;
+            wire [15:0] misclick_events;
             wire [9:0] chart_address;
             wire chart_enable;
             wire [39:0] chart_data;
@@ -127,22 +138,43 @@ module veribeat #(
             wire cmd_load, cmd_play, cmd_stop, cmd_pause, cmd_resume;
             wire audio_ready, audio_error, audio_busy;
             wire game_reset, running, paused, finished, failed;
+            assign misclick_events =
+                (running ? key_pressed & ~16'hE001 : 16'b0) |
+                {lane_misclicks[1],lane_misclicks[2],lane_misclicks[3],12'b0,lane_misclicks[0]};
             wire reset_game = reset | game_reset;
             wire [9:0] field_x = x - 10'd64;
             wire publish_tick = pixel_tick && x == 0 && y == 47;
             assign led = {overrun, failed, finished, paused, running, points};
 
             audio #(.CLKS_PER_BIT(UART_CLKS_PER_BIT)) soundtrack (
-                .clk(clk), .rst(reset), .cmd_load(cmd_load), .song_id(SONG_ID[3:0]),
+                .clk(clk), .rst(reset), .cmd_load(cmd_load), .song_id({2'b0,song_index}),
                 .cmd_play(cmd_play), .cmd_stop(cmd_stop), .cmd_pause(cmd_pause),
                 .cmd_resume(cmd_resume), .audio_ready(audio_ready), .audio_error(audio_error),
                 .busy(audio_busy), .rx_data(), .rx_valid(), .RsRx(RsRx), .RsTx(RsTx)
             );
-            game_session #(.CYCLES_PER_MS(CYCLES_PER_MS), .DURATION_MS(DURATION_MS),
-                           .NOTE_COUNT(NOTE_COUNT)) session (
+            always @(posedge clk) begin
+                if (reset) screen <= 0;
+                else if (frame_tick) begin
+                    if (home) screen <= 0;
+                    else if (finished || failed) screen <= 2;
+                    else if (loading) screen <= 3;
+                    else screen <= 1;
+                end
+            end
+            assign video_color = screen == 1 ? game_color : menu_color;
+            menu_display menus (
+                .clk(clk), .reset(reset), .x(x), .y(y), .screen(screen),
+                .song(song_index), .failed(failed), .hit_digits(digits),
+                .miss_digits(miss_digits), .misclick_digits(misclick_digits), .color(menu_color)
+            );
+            game_session #(.CYCLES_PER_MS(CYCLES_PER_MS)) session (
                 .clk(clk), .reset(reset), .buttons({btnD,btnR,btnL,btnU}),
                 .audio_ready(audio_ready), .audio_error(audio_error), .audio_busy(audio_busy),
-                .resolved_count(resolved_count), .cmd_load(cmd_load), .cmd_play(cmd_play),
+                .resolved_count(resolved_count), .chart_note_count(chart_note_count),
+                .chart_duration_ms(chart_duration_ms),
+                .song_press({key_pressed[3],key_pressed[2],key_pressed[1]}),
+                .any_key(|key_pressed), .song_index(song_index), .home(home), .loading(loading),
+                .cmd_load(cmd_load), .cmd_play(cmd_play),
                 .cmd_stop(cmd_stop), .cmd_pause(cmd_pause), .cmd_resume(cmd_resume),
                 .game_reset(game_reset), .running(running), .elapsed_ms(elapsed_ms),
                 .paused(paused), .finished(finished), .failed(failed)
@@ -154,19 +186,22 @@ module veribeat #(
                 .LANE2_KEY(LANE_KEYS[11:8]), .LANE3_KEY(LANE_KEYS[15:12])
             ) numpad (
                 .clk(clk), .reset(reset), .rows(rows), .cols(cols),
-                .keys(), .pressed(), .released(), .lane_press(lane_press)
+                .keys(), .pressed(key_pressed), .released(), .lane_press(lane_press)
             );
-            notes #(.CHART_FILE(CHART_FILE)) chart (
-                .clk(clk), .enable(chart_enable), .address(chart_address), .data(chart_data)
+            song_library #(.SONG0_FILE(SONG0_FILE), .SONG1_FILE(SONG1_FILE),
+                           .SONG2_FILE(SONG2_FILE)) chart (
+                .clk(clk), .song(song_index), .enable(chart_enable), .address(chart_address),
+                .data(chart_data), .note_count(chart_note_count), .duration_ms(chart_duration_ms)
             );
-            control #(.NOTE_COUNT(NOTE_COUNT)) gameplay (
+            control #(.DYNAMIC_CHART(1)) gameplay (
                 .clk(clk), .reset(reset_game), .frame_tick(frame_tick),
                 .publish_tick(publish_tick), .running(running), .elapsed_ms(elapsed_ms),
                 .lane_press(lane_press), .chart_address(chart_address), .chart_enable(chart_enable),
-                .chart_data(chart_data), .front_bank(front_bank), .front_valid(front_valid),
+                .chart_data(chart_data), .chart_note_count(chart_note_count), .front_bank(front_bank), .front_valid(front_valid),
                 .mask_write(mask_write), .mask_clear(mask_clear), .mask_address(mask_address),
                 .mask_bits(mask_bits), .pulse_ages(pulse_ages), .pulse_hit(pulse_hit),
-                .hits(hits), .resolved_count(resolved_count), .overrun(overrun)
+                .hits(hits), .resolved_count(resolved_count), .overrun(overrun),
+                .note_miss(note_miss), .misclicks(lane_misclicks)
             );
             tile_mask mask (
                 .clk(clk), .front_bank(front_bank), .write_enable(mask_write),
@@ -174,9 +209,15 @@ module veribeat #(
                 .read_address({field_x[8:7],y[8:0]}), .pixel(tile_pixel)
             );
             score tally (.clk(clk), .reset(reset_game), .hits(hits), .points(points), .digits(digits));
+            score misses (.clk(clk), .reset(reset_game), .hits({3'b0,note_miss}),
+                          .points(miss_count), .digits(miss_digits));
+            score #(.WIDTH(14), .LIMIT(9999), .INPUT_BITS(16)) misclicks (
+                .clk(clk), .reset(reset_game), .hits(misclick_events),
+                .points(misclick_count), .digits(misclick_digits)
+            );
             display #(.LANE_KEYS(LANE_KEYS)) renderer (
                 .x(x), .y(y), .tile_pixel(front_valid ? tile_pixel : 2'b0),
-                .pulse_ages(pulse_ages), .pulse_hit(pulse_hit), .digits(digits), .color(video_color)
+                .pulse_ages(pulse_ages), .pulse_hit(pulse_hit), .digits(digits), .color(game_color)
             );
         end
     endgenerate

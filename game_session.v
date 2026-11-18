@@ -5,14 +5,19 @@
 // accepted after ten milliseconds of a stable state.
 module game_session #(
     parameter integer CYCLES_PER_MS = 100000,
-    parameter integer PRE_ROLL_MS = 1400,
-    parameter integer DURATION_MS = 10000,
-    parameter integer NOTE_COUNT = 8
+    parameter integer PRE_ROLL_MS = 1400
 ) (
     input wire clk, reset,
     input wire [3:0] buttons, // restart, pause, resume, stop
     input wire audio_ready, audio_error, audio_busy,
     input wire [10:0] resolved_count,
+    input wire [10:0] chart_note_count,
+    input wire [31:0] chart_duration_ms,
+    input wire [2:0] song_press,
+    input wire any_key,
+    output reg [1:0] song_index,
+    output wire home,
+    output wire loading,
     output reg cmd_load, cmd_play, cmd_stop, cmd_pause, cmd_resume,
     output reg game_reset,
     output wire running,
@@ -22,7 +27,7 @@ module game_session #(
     output wire failed
 );
     localparam STOP_REQUEST=0, STOP_WAIT=1, LOAD_REQUEST=2, LOAD_WAIT=3,
-               PLAYING=4, PAUSED=5, FINISHED=6, FAILED=7, STOPPED=8;
+               PLAYING=4, PAUSED=5, FINISHED=6, FAILED=7, HOME=8, HOME_STOP=9;
     reg [3:0] state;
     localparam DIVIDER_BITS = CYCLES_PER_MS > 1 ? $clog2(CYCLES_PER_MS) : 1;
     reg [DIVIDER_BITS-1:0] ms_divider;
@@ -37,6 +42,9 @@ module game_session #(
     assign paused = state == PAUSED;
     assign finished = state == FINISHED;
     assign failed = state == FAILED;
+    assign home = state == HOME || state == HOME_STOP;
+    assign loading = state == STOP_REQUEST || state == STOP_WAIT ||
+                     state == LOAD_REQUEST || state == LOAD_WAIT;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -65,7 +73,8 @@ module game_session #(
 
     always @(posedge clk) begin
         if (reset) begin
-            state <= STOP_REQUEST;
+            state <= HOME_STOP;
+            song_index <= 0;
             settle <= 0;
             elapsed_ms <= 0;
             ms_divider <= 0;
@@ -76,6 +85,18 @@ module game_session #(
             cmd_load <= 0; cmd_play <= 0; cmd_stop <= 0;
             cmd_pause <= 0; cmd_resume <= 0; game_reset <= 0;
             case (state)
+                HOME_STOP: begin
+                    cmd_stop <= 1;
+                    state <= HOME;
+                end
+                HOME: begin
+                    if (|song_press) begin
+                        if (song_press[0]) song_index <= 0;
+                        else if (song_press[1]) song_index <= 1;
+                        else song_index <= 2;
+                        state <= STOP_REQUEST;
+                    end
+                end
                 STOP_REQUEST: begin
                     cmd_stop <= 1;
                     game_reset <= 1;
@@ -102,8 +123,8 @@ module game_session #(
                         ms_divider <= 0;
                         elapsed_ms <= elapsed_ms + 1'b1;
                         if (elapsed_ms == PRE_ROLL_MS-1) cmd_play <= 1;
-                        if (elapsed_ms >= PRE_ROLL_MS + DURATION_MS + 250 &&
-                            resolved_count == NOTE_COUNT) begin
+                        if (elapsed_ms >= PRE_ROLL_MS + chart_duration_ms + 400 &&
+                            resolved_count == chart_note_count) begin
                             cmd_stop <= 1;
                             state <= FINISHED;
                         end
@@ -119,8 +140,19 @@ module game_session #(
                 cmd_stop <= 1;
                 state <= FAILED;
             end
-            if (button_pulse[3]) begin cmd_stop <= 1; state <= STOPPED; end
-            if (button_pulse[0]) state <= STOP_REQUEST;
+            if (state == FINISHED || state == FAILED) begin
+                // A return press is consumed here. A fresh key 1–3 press
+                // on HOME is required to select the next song.
+                if (any_key || |button_pulse) begin
+                    state <= HOME;
+                    game_reset <= 1;
+                    elapsed_ms <= 0;
+                    ms_divider <= 0;
+                end
+            end else if (running || paused || loading) begin
+                if (button_pulse[3]) begin cmd_stop <= 1; state <= FINISHED; end
+                if (button_pulse[0]) state <= STOP_REQUEST;
+            end
         end
     end
 endmodule

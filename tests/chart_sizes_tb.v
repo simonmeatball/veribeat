@@ -17,7 +17,7 @@ module chart_size_case #(parameter COUNT=0)(output reg done=0);
     control #(.NOTE_COUNT(COUNT)) dut (
         .clk(clk),.reset(reset),.frame_tick(frame_tick),.publish_tick(publish_tick),
         .running(1'b1),.elapsed_ms(elapsed),.lane_press(press),
-        .chart_address(address),.chart_enable(enable),.chart_data(data),
+        .chart_address(address),.chart_enable(enable),.chart_data(data),.chart_note_count(11'd0),
         .front_bank(),.front_valid(),.mask_write(),.mask_clear(),.mask_address(),.mask_bits(),
         .pulse_ages(),.pulse_hit(),.hits(hits),.resolved_count(resolved_count),.overrun(overrun)
     );

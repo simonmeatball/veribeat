@@ -1,0 +1,2081 @@
+{
+  "source_audio": "audio/songs/song_2.mp3",
+  "sha256": "2ac8f1c4370365dd66057a596a892562b9753452742f342ce80210cf6c5e60cb",
+  "method": "decoded MP3 spectral attacks, full-track tempo/phase fit, adaptive eighth notes and syncopations",
+  "sample_rate": 22050,
+  "hop_samples": 256,
+  "decoded_duration_ms": 158064.036,
+  "estimated_bpm": 89.992507,
+  "eighth_grid_phase_ms": 203.738,
+  "sixteenth_phase_coherence": 0.770345,
+  "notes": 419,
+  "distinct_attack_times": 410,
+  "accent_chords": 9,
+  "first_note_ms": 534,
+  "last_note_ms": 153646,
+  "lane_counts": [
+    104,
+    101,
+    104,
+    110
+  ],
+  "minimum_same_lane_gap_ms": 244,
+  "median_grid_residual_ms": 6.413,
+  "p95_grid_residual_ms": 36.484,
+  "events": [
+    {
+      "time_ms": 534,
+      "strength": 18.4083,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 871,
+      "strength": 12.3084,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 1544,
+      "strength": 15.0321,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 1869,
+      "strength": 16.6165,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 2206,
+      "strength": 13.6378,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 2531,
+      "strength": 15.8016,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 2868,
+      "strength": 10.2484,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 3204,
+      "strength": 19.2033,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 3379,
+      "strength": 12.9574,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 3541,
+      "strength": 15.2274,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 3704,
+      "strength": 16.1938,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 3866,
+      "strength": 21.6801,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 4203,
+      "strength": 20.4019,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 4876,
+      "strength": 4.6553,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 5201,
+      "strength": 15.8211,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 5875,
+      "strength": 7.5866,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 6873,
+      "strength": 10.5946,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 7210,
+      "strength": 7.4253,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 7546,
+      "strength": 6.7183,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 7872,
+      "strength": 11.8415,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 8208,
+      "strength": 13.3439,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 8533,
+      "strength": 13.9699,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 8870,
+      "strength": 12.6545,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 9207,
+      "strength": 6.7651,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 9543,
+      "strength": 9.1561,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 10205,
+      "strength": 5.8166,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 10542,
+      "strength": 10.1168,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 10890,
+      "strength": 6.2621,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 11540,
+      "strength": 4.2358,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 11877,
+      "strength": 7.1674,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 12214,
+      "strength": 8.9466,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 12875,
+      "strength": 6.3114,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 13212,
+      "strength": 8.9758,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 13537,
+      "strength": 10.7312,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 13711,
+      "strength": 7.0816,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 13874,
+      "strength": 16.2138,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 14211,
+      "strength": 10.2774,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 14536,
+      "strength": 8.3091,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 14872,
+      "strength": 12.8516,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 15534,
+      "strength": 9.5354,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 15871,
+      "strength": 14.3344,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 16219,
+      "strength": 3.6022,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 17206,
+      "strength": 7.2042,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 17543,
+      "strength": 10.8626,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 17879,
+      "strength": 6.7742,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 18204,
+      "strength": 7.6987,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 18379,
+      "strength": 6.8907,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 18541,
+      "strength": 11.533,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 18878,
+      "strength": 12.9679,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 19203,
+      "strength": 18.2229,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 19540,
+      "strength": 9.7023,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 19876,
+      "strength": 8.0062,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 20201,
+      "strength": 10.8573,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 20875,
+      "strength": 5.7559,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 21200,
+      "strength": 13.9023,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 21548,
+      "strength": 5.7117,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 22210,
+      "strength": 4.0058,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 22547,
+      "strength": 6.2201,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 22872,
+      "strength": 6.7205,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 23208,
+      "strength": 5.7887,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 23545,
+      "strength": 6.7054,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 23870,
+      "strength": 11.0786,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 24207,
+      "strength": 13.44,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 24381,
+      "strength": 8.3989,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 24543,
+      "strength": 14.3851,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 24869,
+      "strength": 11.2737,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 25205,
+      "strength": 8.8659,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 25542,
+      "strength": 11.685,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 26204,
+      "strength": 10.7077,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 26529,
+      "strength": 11.6151,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 26877,
+      "strength": 5.2862,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 27214,
+      "strength": 7.7984,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 27876,
+      "strength": 3.4806,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 28212,
+      "strength": 5.3764,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 28537,
+      "strength": 4.9841,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 28874,
+      "strength": 4.9603,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 29176,
+      "strength": 3.9151,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 29547,
+      "strength": 4.5245,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 29872,
+      "strength": 4.6062,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 30232,
+      "strength": 2.2955,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 30546,
+      "strength": 5.726,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 30883,
+      "strength": 5.4745,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 31231,
+      "strength": 2.8479,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 31556,
+      "strength": 2.7509,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 31881,
+      "strength": 4.4115,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 32229,
+      "strength": 3.9983,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 32554,
+      "strength": 5.239,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 32891,
+      "strength": 1.8706,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 33181,
+      "strength": 3.3126,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 33553,
+      "strength": 5.151,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 33878,
+      "strength": 4.1201,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 34551,
+      "strength": 4.1567,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 34876,
+      "strength": 3.5327,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 35213,
+      "strength": 4.2828,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 35561,
+      "strength": 1.5578,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 35875,
+      "strength": 3.8004,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 36223,
+      "strength": 3.2305,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 36560,
+      "strength": 3.0701,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 36897,
+      "strength": 1.9948,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 37210,
+      "strength": 4.4965,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 37547,
+      "strength": 3.4478,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 37883,
+      "strength": 4.5979,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 38220,
+      "strength": 2.0878,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 38545,
+      "strength": 3.9922,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 38882,
+      "strength": 5.3334,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 39207,
+      "strength": 4.6228,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 39555,
+      "strength": 1.8088,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 39880,
+      "strength": 3.8164,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 40217,
+      "strength": 3.9589,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 40507,
+      "strength": 3.6268,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 40890,
+      "strength": 2.4922,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 41215,
+      "strength": 5.5849,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 41540,
+      "strength": 4.8549,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 41900,
+      "strength": 3.3501,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 42225,
+      "strength": 2.9581,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 42539,
+      "strength": 4.9104,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 42899,
+      "strength": 2.9649,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 43201,
+      "strength": 5.798,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 43549,
+      "strength": 2.8106,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 43874,
+      "strength": 4.4467,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 44222,
+      "strength": 4.0538,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 44547,
+      "strength": 4.2493,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 45209,
+      "strength": 4.7123,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 45546,
+      "strength": 3.6429,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 45883,
+      "strength": 4.7269,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 46219,
+      "strength": 2.0426,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 46544,
+      "strength": 3.7416,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 46881,
+      "strength": 4.1358,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 47229,
+      "strength": 3.2751,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 47554,
+      "strength": 1.8358,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 47880,
+      "strength": 4.4759,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 48216,
+      "strength": 2.8756,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 48553,
+      "strength": 4.495,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 48890,
+      "strength": 1.3634,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 49215,
+      "strength": 5.2807,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 49551,
+      "strength": 3.1825,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 50550,
+      "strength": 3.1675,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 50887,
+      "strength": 4.7576,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 51049,
+      "strength": 4.3346,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 51223,
+      "strength": 3.3481,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 51560,
+      "strength": 1.703,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 51885,
+      "strength": 4.423,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 52222,
+      "strength": 3.1522,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 52558,
+      "strength": 3.2408,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 52895,
+      "strength": 2.1153,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 53162,
+      "strength": 3.3907,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 53557,
+      "strength": 4.8037,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 53719,
+      "strength": 3.0527,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 53894,
+      "strength": 2.9346,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 54172,
+      "strength": 2.8457,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 54544,
+      "strength": 6.536,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 54846,
+      "strength": 1.9267,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 55554,
+      "strength": 2.1251,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 55879,
+      "strength": 4.0418,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 56216,
+      "strength": 4.2896,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 56378,
+      "strength": 3.5874,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 56552,
+      "strength": 3.7942,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 56889,
+      "strength": 2.4975,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 57051,
+      "strength": 2.7875,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 57551,
+      "strength": 3.3849,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 58236,
+      "strength": 1.7652,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 58503,
+      "strength": 2.311,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 58886,
+      "strength": 3.4422,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 59048,
+      "strength": 2.7404,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 59222,
+      "strength": 2.685,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 60244,
+      "strength": 2.9232,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 60906,
+      "strength": 1.3922,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 61486,
+      "strength": 4.4025,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 61870,
+      "strength": 4.1051,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 62195,
+      "strength": 1.1616,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 62555,
+      "strength": 2.4021,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 62903,
+      "strength": 1.8094,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 63576,
+      "strength": 1.3546,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 63774,
+      "strength": 1.7929,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 64017,
+      "strength": 4.5171,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 64226,
+      "strength": 1.0343,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 64540,
+      "strength": 2.3982,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 64923,
+      "strength": 1.5149,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 65527,
+      "strength": 2.1582,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 66212,
+      "strength": 1.3332,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 66456,
+      "strength": 1.988,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 66630,
+      "strength": 2.2672,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 66885,
+      "strength": 5.8776,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 67245,
+      "strength": 2.2122,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 67837,
+      "strength": 3.0941,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 68905,
+      "strength": 1.6711,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 69219,
+      "strength": 2.8082,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 69555,
+      "strength": 4.4733,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 69880,
+      "strength": 4.8637,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 70217,
+      "strength": 3.2995,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 70380,
+      "strength": 3.6548,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 70542,
+      "strength": 5.526,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 70879,
+      "strength": 5.7537,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 71541,
+      "strength": 3.6541,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 71877,
+      "strength": 3.4978,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 72191,
+      "strength": 4.475,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 72876,
+      "strength": 5.2846,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 73213,
+      "strength": 5.424,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 73549,
+      "strength": 3.2462,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 73886,
+      "strength": 3.6058,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 74211,
+      "strength": 3.8443,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 74548,
+      "strength": 3.1437,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 74896,
+      "strength": 2.0488,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 75546,
+      "strength": 3.9936,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 75883,
+      "strength": 5.0902,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 76208,
+      "strength": 5.482,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 76893,
+      "strength": 2.2788,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 77555,
+      "strength": 2.4684,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 77880,
+      "strength": 4.8795,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 78042,
+      "strength": 3.3998,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 78205,
+      "strength": 5.8399,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 78541,
+      "strength": 5.0262,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 78878,
+      "strength": 4.9423,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 79540,
+      "strength": 3.8759,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 79877,
+      "strength": 3.828,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 80225,
+      "strength": 3.2975,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 80875,
+      "strength": 3.5975,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 81049,
+      "strength": 4.0271,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 81212,
+      "strength": 6.0056,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 81548,
+      "strength": 2.502,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 82222,
+      "strength": 2.6946,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 82547,
+      "strength": 4.1211,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 82895,
+      "strength": 4.1591,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 83545,
+      "strength": 4.2205,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 83882,
+      "strength": 4.8601,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 84219,
+      "strength": 3.396,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 84567,
+      "strength": 3.7623,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 84881,
+      "strength": 3.2854,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 85217,
+      "strength": 3.1134,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 85507,
+      "strength": 1.953,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 86216,
+      "strength": 3.599,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 86378,
+      "strength": 3.8333,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 86541,
+      "strength": 5.1894,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 86877,
+      "strength": 6.5691,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 87226,
+      "strength": 2.4436,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 87551,
+      "strength": 2.2182,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 87876,
+      "strength": 2.9666,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 88224,
+      "strength": 2.5193,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 88549,
+      "strength": 2.6469,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 88712,
+      "strength": 2.646,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 88874,
+      "strength": 4.9781,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 89049,
+      "strength": 2.8238,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 89211,
+      "strength": 5.2668,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 89548,
+      "strength": 5.4607,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 90198,
+      "strength": 2.0559,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 90906,
+      "strength": 1.9041,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 91556,
+      "strength": 5.1254,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 91870,
+      "strength": 2.7309,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 92253,
+      "strength": 2.0981,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 92415,
+      "strength": 2.4088,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 92833,
+      "strength": 1.2174,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 93240,
+      "strength": 2.1155,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 93565,
+      "strength": 1.4118,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 93867,
+      "strength": 4.1099,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 94064,
+      "strength": 2.2977,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 94250,
+      "strength": 1.7059,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 94888,
+      "strength": 2.271,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 95515,
+      "strength": 1.7729,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 95875,
+      "strength": 5.7488,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 96223,
+      "strength": 3.8279,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 96549,
+      "strength": 4.076,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 96874,
+      "strength": 3.3402,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 97210,
+      "strength": 3.7874,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 97547,
+      "strength": 4.6088,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 98220,
+      "strength": 2.1636,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 98545,
+      "strength": 4.2312,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 98894,
+      "strength": 2.3463,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 99207,
+      "strength": 6.2381,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 99509,
+      "strength": 7.3951,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 99881,
+      "strength": 3.8308,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 100217,
+      "strength": 3.363,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 100891,
+      "strength": 1.5,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 101204,
+      "strength": 4.864,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 101576,
+      "strength": 2.1012,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 101889,
+      "strength": 2.9426,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 102214,
+      "strength": 2.4192,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 102539,
+      "strength": 8.3844,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 102888,
+      "strength": 3.3159,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 103213,
+      "strength": 2.7213,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 103538,
+      "strength": 6.2756,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 103874,
+      "strength": 4.8222,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 104211,
+      "strength": 2.5809,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 104548,
+      "strength": 5.5438,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 104710,
+      "strength": 4.3141,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 104885,
+      "strength": 2.6935,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 105210,
+      "strength": 3.0415,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 105546,
+      "strength": 3.7229,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 105848,
+      "strength": 3.1457,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 106220,
+      "strength": 2.0032,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 106545,
+      "strength": 4.0612,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 106858,
+      "strength": 1.6009,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 107218,
+      "strength": 2.9769,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 107555,
+      "strength": 2.7062,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 107717,
+      "strength": 3.1755,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 107880,
+      "strength": 3.3172,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 108217,
+      "strength": 2.7136,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 108890,
+      "strength": 4.1223,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 109215,
+      "strength": 4.9326,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 109552,
+      "strength": 3.2233,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 110225,
+      "strength": 1.8294,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 110550,
+      "strength": 5.1181,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 110887,
+      "strength": 2.9156,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 111549,
+      "strength": 2.7299,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 111874,
+      "strength": 6.4889,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 112234,
+      "strength": 2.19,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 112733,
+      "strength": 3.7174,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 112895,
+      "strength": 3.4515,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 113232,
+      "strength": 3.4152,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 113557,
+      "strength": 1.3493,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 113929,
+      "strength": 2.1635,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 114219,
+      "strength": 1.4967,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 114556,
+      "strength": 2.5642,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 114881,
+      "strength": 3.2765,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 115043,
+      "strength": 3.0159,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 115217,
+      "strength": 1.9211,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 115554,
+      "strength": 3.2801,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 115891,
+      "strength": 1.9821,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 116239,
+      "strength": 1.6067,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 116901,
+      "strength": 1.7123,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 117226,
+      "strength": 1.966,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 117551,
+      "strength": 3.8013,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 117714,
+      "strength": 2.269,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 118050,
+      "strength": 2.9087,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 118236,
+      "strength": 3.058,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 118898,
+      "strength": 2.9592,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 119234,
+      "strength": 2.8407,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 119571,
+      "strength": 1.2862,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 120895,
+      "strength": 4.5709,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 121255,
+      "strength": 1.9383,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 121591,
+      "strength": 1.1757,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 121882,
+      "strength": 2.3906,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 122543,
+      "strength": 1.9528,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 122892,
+      "strength": 2.255,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 123217,
+      "strength": 3.0073,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 123553,
+      "strength": 1.459,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 123878,
+      "strength": 2.7631,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 124215,
+      "strength": 2.6011,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 124877,
+      "strength": 2.5157,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 125214,
+      "strength": 3.9067,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 125539,
+      "strength": 5.377,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 125887,
+      "strength": 2.5388,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 126212,
+      "strength": 3.4881,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 126549,
+      "strength": 3.7386,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 126885,
+      "strength": 2.5716,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 127547,
+      "strength": 2.8005,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 128232,
+      "strength": 2.3379,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 128546,
+      "strength": 3.9642,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 128882,
+      "strength": 4.4689,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 129045,
+      "strength": 4.2745,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 129207,
+      "strength": 6.2855,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 129498,
+      "strength": 3.4452,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 130218,
+      "strength": 1.8517,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 130891,
+      "strength": 2.7187,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 131216,
+      "strength": 2.8494,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 131379,
+      "strength": 3.2275,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 131541,
+      "strength": 5.1684,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 131878,
+      "strength": 5.7835,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 132214,
+      "strength": 3.179,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 132888,
+      "strength": 3.4396,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 133143,
+      "strength": 3.1402,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 133561,
+      "strength": 2.6355,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 133840,
+      "strength": 2.8706,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 134211,
+      "strength": 4.1969,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 134374,
+      "strength": 3.8742,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 134548,
+      "strength": 5.5161,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 134885,
+      "strength": 2.0836,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 135546,
+      "strength": 2.8892,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 135883,
+      "strength": 3.8039,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 136220,
+      "strength": 4.7649,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 136882,
+      "strength": 4.0616,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 137218,
+      "strength": 4.0234,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 137555,
+      "strength": 3.3395,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 137892,
+      "strength": 3.8243,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 138217,
+      "strength": 3.9112,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 138542,
+      "strength": 2.7471,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 138902,
+      "strength": 1.808,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 139215,
+      "strength": 3.2072,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 139552,
+      "strength": 3.8135,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 139714,
+      "strength": 4.0598,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 139877,
+      "strength": 5.1817,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 140214,
+      "strength": 2.9917,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 140887,
+      "strength": 1.658,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 141212,
+      "strength": 1.9175,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 141560,
+      "strength": 2.2723,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 141886,
+      "strength": 3.3722,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 142222,
+      "strength": 2.8419,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 142385,
+      "strength": 2.3113,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 142547,
+      "strength": 5.2468,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 142849,
+      "strength": 2.8102,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 143557,
+      "strength": 2.1158,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 143882,
+      "strength": 2.2074,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 144231,
+      "strength": 1.8713,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 144939,
+      "strength": 0.9617,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 145566,
+      "strength": 1.4306,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 146228,
+      "strength": 1.0287,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 146901,
+      "strength": 1.9741,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 147215,
+      "strength": 0.8925,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 147574,
+      "strength": 1.1103,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 148236,
+      "strength": 1.3794,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 148910,
+      "strength": 0.9715,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 149223,
+      "strength": 1.0242,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 149583,
+      "strength": 0.9242,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 149885,
+      "strength": 1.976,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 150570,
+      "strength": 0.7069,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 150906,
+      "strength": 1.9487,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 151568,
+      "strength": 0.7967,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 152242,
+      "strength": 1.2088,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 152555,
+      "strength": 0.6087,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 152915,
+      "strength": 0.8749,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 153646,
+      "strength": 0.7902,
+      "kind": "syncopation"
+    }
+  ],
+  "limitations": [
+    "Automatic rhythm arrangement, without manual listening verification or melody transcription.",
+    "MP3 decoder/playback latency and USB audio-start delay require board calibration."
+  ]
+}
