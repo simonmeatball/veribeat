@@ -86,7 +86,7 @@ Testbench files belong under Simulation Sources.
 
 ### Keypad and audio controls
 
-Connect the PmodKYPD to JB. The scanner sends synchronized, debounced pulses.
+Connect the PmodKYPD to JXADC (JX). The scanner sends synchronized, debounced pulses.
 The controller buffers pulses even while scanning the chart.
 
 | Lane, left to right | 1 | 2 | 3 | 4 |
