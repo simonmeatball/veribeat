@@ -123,6 +123,11 @@ module veribeat #(
             wire [10:0] miss_count;
             wire [13:0] misclick_count;
             wire [11:0] game_color, menu_color;
+            wire hud_pixel;
+            wire [19:0] total_score;
+            wire [23:0] score_digits;
+            wire [10:0] combo, longest_streak;
+            wire [15:0] combo_digits, longest_digits;
             reg [1:0] screen;
             wire [15:0] misclick_events;
             wire [9:0] chart_address;
@@ -161,11 +166,13 @@ module veribeat #(
                     else screen <= 1;
                 end
             end
-            assign video_color = screen == 1 ? game_color : menu_color;
+            assign video_color = screen == 1 && !hud_pixel ? game_color : menu_color;
             menu_display menus (
                 .clk(clk), .reset(reset), .x(x), .y(y), .screen(screen),
                 .song(song_index), .failed(failed), .hit_digits(digits),
-                .miss_digits(miss_digits), .misclick_digits(misclick_digits), .color(menu_color)
+                .miss_digits(miss_digits), .misclick_digits(misclick_digits),
+                .score_digits(score_digits), .combo_digits(combo_digits), .longest_digits(longest_digits),
+                .hud_pixel(hud_pixel), .color(menu_color)
             );
             game_session #(.CYCLES_PER_MS(CYCLES_PER_MS)) session (
                 .clk(clk), .reset(reset), .buttons({btnD,btnR,btnL,btnU}),
@@ -207,6 +214,12 @@ module veribeat #(
                 .clk(clk), .front_bank(front_bank), .write_enable(mask_write),
                 .clear_pixel(mask_clear), .write_address(mask_address), .write_bits(mask_bits),
                 .read_address({field_x[8:7],y[8:0]}), .pixel(tile_pixel)
+            );
+            combo_score scoring (
+                .clk(clk), .reset(reset_game), .hits(hits), .note_miss(note_miss),
+                .misclicks(misclick_events), .total_score(total_score), .score_digits(score_digits),
+                .combo(combo), .combo_digits(combo_digits),
+                .longest_streak(longest_streak), .longest_digits(longest_digits)
             );
             score tally (.clk(clk), .reset(reset_game), .hits(hits), .points(points), .digits(digits));
             score misses (.clk(clk), .reset(reset_game), .hits({3'b0,note_miss}),

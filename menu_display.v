@@ -11,6 +11,9 @@ module menu_display (
     input wire [1:0] song,
     input wire failed,
     input wire [15:0] hit_digits, miss_digits, misclick_digits,
+    input wire [23:0] score_digits,
+    input wire [15:0] combo_digits, longest_digits,
+    output reg hud_pixel,
     output reg [11:0] color
 );
     function [7:0] text_character;
@@ -172,6 +175,26 @@ module menu_display (
                 10'd520: text_character = "R";
                 10'd521: text_character = "O";
                 10'd522: text_character = "R";
+                10'd544: text_character = "S";
+                10'd545: text_character = "C";
+                10'd546: text_character = "O";
+                10'd547: text_character = "R";
+                10'd548: text_character = "E";
+                10'd576: text_character = "C";
+                10'd577: text_character = "O";
+                10'd578: text_character = "M";
+                10'd579: text_character = "B";
+                10'd580: text_character = "O";
+                10'd608: text_character = "B";
+                10'd609: text_character = "E";
+                10'd610: text_character = "S";
+                10'd611: text_character = "T";
+                10'd613: text_character = "S";
+                10'd614: text_character = "T";
+                10'd615: text_character = "R";
+                10'd616: text_character = "E";
+                10'd617: text_character = "A";
+                10'd618: text_character = "K";
                 default: text_character = " ";
             endcase
         end
@@ -225,12 +248,13 @@ module menu_display (
 
     reg [4:0] message;
     reg [9:0] text_x, text_y;
-    reg text_enabled, number_enabled;
-    reg [15:0] number;
+    reg text_enabled, number_enabled, wide_number;
+    reg [23:0] number;
     reg [11:0] background, ink;
     reg [7:0] character;
     reg [2:0] column_reg, row_reg;
     reg [11:0] background_reg, ink_reg;
+    reg hud_reg;
     wire [9:0] dx = x-text_x;
     wire [9:0] dy = y-text_y;
     wire [14:0] bitmap = glyph(character);
@@ -243,6 +267,7 @@ module menu_display (
         text_y=0;
         text_enabled=0;
         number_enabled=0;
+        wide_number=0;
         number=0;
         if (x >= 64 && x < 576 && y >= 48 && y < 448) begin
             background=12'h113;
@@ -264,22 +289,48 @@ module menu_display (
                 else if (y>=416 && y<436) begin message=5; text_x=208; text_y=416; ink=12'hb8f; end
                 text_enabled=1;
             end
+            1: begin
+                if(y>=15 && y<35) begin
+                    text_y=15;
+                    text_enabled=1;
+                    if(x<320) begin
+                        message=17; text_x=64;
+                        if(x>=160 && x<256) begin
+                            text_x=160; number=score_digits;
+                            number_enabled=1; wide_number=1;
+                        end
+                    end else begin
+                        message=18; text_x=352; ink=12'h6ef;
+                        if(x>=448 && x<512) begin
+                            text_x=448; number={8'b0,combo_digits}; number_enabled=1;
+                        end
+                    end
+                end
+            end
             2: begin
                 if (y>=64 && y<84) begin
                     message=failed ? 16 : 6;
                     text_x=failed ? 232 : 264; text_y=64;
                     ink=failed ? 12'hf44 : 12'h6ef;
                 end else if (y>=112 && y<132) begin message=13+song; text_x=song==0 ? 208 : song==1 ? 288 : 248; text_y=112; end
-                else if (y>=176 && y<196) begin message=7; text_x=144; text_y=176; end
-                else if (y>=240 && y<260) begin message=8; text_x=144; text_y=240; end
-                else if (y>=304 && y<324) begin message=9; text_x=144; text_y=304; end
+                else if (y>=160 && y<180) begin message=17; text_x=112; text_y=160; end
+                else if (y>=200 && y<220) begin message=7; text_x=112; text_y=200; end
+                else if (y>=240 && y<260) begin message=8; text_x=112; text_y=240; end
+                else if (y>=280 && y<300) begin message=9; text_x=112; text_y=280; end
+                else if (y>=320 && y<340) begin message=19; text_x=112; text_y=320; end
                 else if (y>=400 && y<420) begin message=10; text_x=192; text_y=400; ink=12'hb8f; end
                 text_enabled=1;
-                if (x>=400 && x<464) begin
-                    if (y>=176 && y<196) begin number=hit_digits; text_y=176; number_enabled=1; end
-                    if (y>=240 && y<260) begin number=miss_digits; text_y=240; number_enabled=1; end
-                    if (y>=304 && y<324) begin number=misclick_digits; text_y=304; number_enabled=1; end
-                    if (number_enabled) text_x=400;
+                if (x>=400 && x<496) begin
+                    if (y>=160 && y<180) begin
+                        number=score_digits; text_y=160; number_enabled=1; wide_number=1;
+                    end
+                    if (x>=432) begin
+                        if (y>=200 && y<220) begin number={8'b0,hit_digits}; text_y=200; number_enabled=1; end
+                        if (y>=240 && y<260) begin number={8'b0,miss_digits}; text_y=240; number_enabled=1; end
+                        if (y>=280 && y<300) begin number={8'b0,misclick_digits}; text_y=280; number_enabled=1; end
+                        if (y>=320 && y<340) begin number={8'b0,longest_digits}; text_y=320; number_enabled=1; end
+                    end
+                    if (number_enabled) text_x=wide_number ? 400 : 432;
                 end
             end
             3: begin
@@ -296,20 +347,26 @@ module menu_display (
     always @(posedge clk) begin
         if (reset) begin
             character <= " ";
+            hud_reg <= 0;
+            hud_pixel <= 0;
             column_reg <= 0;
             row_reg <= 0;
             background_reg <= 12'h012;
             ink_reg <= 12'hfff;
             color <= 12'h012;
         end else begin
+            hud_reg <= screen==1 && y<48;
+            hud_pixel <= hud_reg;
             background_reg <= background;
             ink_reg <= ink;
             column_reg <= dx[3:2];
             row_reg <= dy[4:2];
             character <= " ";
             if (text_enabled && x>=text_x && dx<512 && dy<20 && dx[3:2]<3) begin
-                if (number_enabled)
-                    character <= 8'd48 + {4'b0,number[4*(3-dx[5:4]) +: 4]};
+                if (number_enabled) begin
+                    if(wide_number) character <= 8'd48 + {4'b0,number[4*(5-dx[6:4]) +: 4]};
+                    else character <= 8'd48 + {4'b0,number[4*(3-dx[5:4]) +: 4]};
+                end
                 else character <= text_character(message,dx[8:4]);
             end
             color <= background_reg;

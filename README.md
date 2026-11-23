@@ -5,8 +5,9 @@
 The home screen offers all three songs in one FPGA build. Press keypad `1`
 for Yoru ni Kakeru (song 0), `2` for APT. (song 1), or `3` for Sunflower
 (song 2). The selected song loads through the laptop audio player before
-play starts. At the end, the results screen shows hits, missed notes, and
-misclicks. Press any keypad key or board button to return home, then make
+play starts. During play, the HUD shows the score and current combo. At the
+end, the results screen shows score, hits, missed notes, misclicks, and the
+longest streak. Press any keypad key or board button to return home, then make
 a fresh song selection.
 
 A hit is a successfully judged note. A miss is a note that passes its late
@@ -19,8 +20,25 @@ Misclick statistics saturate at the four-digit display limit of 9999.
 The game accepts up to 1,024 tap notes from a text chart. Press the matching
 bottom-row keypad key when the center of a cyan tile reaches the center of
 its bottom pad, aligned with the purple timing line. The hit window is
-±160 ms. A hit adds one point and flashes white. A missed note or unmatched
-press flashes red. The score supports 0–1024.
+±160 ms. A hit flashes white and advances the combo by one note. A missed
+note or unmatched press flashes red and resets the combo to zero.
+
+Each hit earns 100 base points with the following multiplier. The threshold
+note uses the new multiplier, so the tenth consecutive hit earns 200 points.
+
+| Current combo after the hit | Multiplier | Points per note |
+| --- | ---: | ---: |
+| 1–9 | 1× | 100 |
+| 10–19 | 2× | 200 |
+| 20–29 | 3× | 300 |
+| 30 and above | 4× | 400 |
+
+Each note in a chord advances the streak and receives its own multiplier.
+Misses and misclicks reset the current combo while the longest streak is
+retained for the results screen. Simultaneous successes and an error award
+base points and reset the combo. Restarting or returning home clears the
+run's score and streak records. A perfect 1,024-note run earns 403900 points;
+the six-digit score display and four-digit streak display cover this range.
 
 Each press consumes the oldest eligible note in its lane. When two windows
 overlap, the later note stays available for another press. The judge stores
@@ -116,6 +134,7 @@ sources and set `veribeat` as the synthesis top.
 clock.v          vga.v          veribeat.v
 input.v          notes.v        control.v
 tile_mask.v      display.v      score.v
+combo_score.v
 game_session.v   audio.v        song_library.v
 menu_display.v
 ```
@@ -171,7 +190,7 @@ on-board calibration using `audio_offset_ms`.
 | Right | Resume |
 | Down | Stop and show results |
 
-LEDs 0–10 show the binary score. LEDs 11–15 show running, paused, finished,
+LEDs 0–10 show the binary hit count. LEDs 11–15 show running, paused, finished,
 audio failure, and renderer deadline failure respectively. An audio failure
 shows an error/results screen. Return home and select a song after correcting
 the player or song file. Any button on the results screen returns home. The game ends
@@ -185,6 +204,9 @@ metadata. `game_session.v` controls home, loading, play, pause, and results.
 `menu_display.v` draws the home/loading/results screens with two 100 MHz
 pipeline stages that settle within the existing four-cycle pixel interval.
 `score.v` instances count hits, individual missed notes, and misclick events.
+`combo_score.v` tracks the current/longest streak and awards combo multipliers.
+Its decimal score accumulator works in hundreds, avoiding division or a
+long decimal carry chain in the VGA pixel path.
 `control.v` scans the selected chart twice per
 frame to judge notes and paint the next tile mask. `tile_mask.v` stores two
 banks of four lane masks. A complete bank is published at VGA line 47,
@@ -216,16 +238,20 @@ vvp -N /tmp/veribeat-menu-test
 iverilog -g2005 -Wall -s stats_counter_tb -o /tmp/veribeat-stats-test \
   score.v tests/stats_counter_tb.v
 vvp -N /tmp/veribeat-stats-test
+iverilog -g2005 -Wall -s combo_score_tb -o /tmp/veribeat-combo-test \
+  score.v combo_score.v tests/combo_score_tb.v
+vvp -N /tmp/veribeat-combo-test
 iverilog -g2005 -Wall -s integration_tb -o /tmp/veribeat-integration-test \
   clock.v vga.v veribeat.v input.v notes.v song_library.v control.v tile_mask.v \
-  score.v display.v menu_display.v audio.v game_session.v tests/integration_tb.v
+  score.v combo_score.v display.v menu_display.v audio.v game_session.v tests/integration_tb.v
 vvp -N /tmp/veribeat-integration-test
 iverilog -g2005 -Wall -s keypad_tb -o /tmp/veribeat-keypad-test input.v tests/keypad_tb.v
 vvp -N /tmp/veribeat-keypad-test
 ```
 
 The integration simulation checks physical matrix song selection, UART
-STOP/LOAD/ready, gameplay presses, all three counters, results, and returning
+STOP/LOAD/ready, gameplay presses, score/combo changes, all three counters,
+longest streak, results, and returning
 home while holding the return key. It advances song time for the test. Use
 `-Pintegration_tb.SONG_ID=1` or `=2` to exercise the other selections. The
 session simulation checks all menu selections, countdown, pause/resume,

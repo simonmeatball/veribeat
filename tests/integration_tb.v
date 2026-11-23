@@ -81,24 +81,28 @@ module integration_tb #(
         wait(dut.game.points==1);
         held=0; held_keys=0;
         wait(dut.game.front_valid);
-        if(dut.game.overrun || dut.game.failed || dut.game.misclick_count !== 0) $stop;
+        if(dut.game.overrun || dut.game.failed || dut.game.misclick_count !== 0 ||
+           dut.game.total_score !== 100 || dut.game.combo !== 1 || dut.game.longest_streak !== 1) $stop;
         // A non-lane key during play is a misclick, independent of song selection.
         held_keys=16'h0010;
         wait(dut.game.misclick_count==1);
+        if(dut.game.combo !== 0 || dut.game.longest_streak !== 1) $stop;
         held_keys=0;
         // Resolve the rest of the selected chart and display its final stats.
         first_target=dut.game.chart_duration_ms+32'd1900;
         wait(dut.game.finished);
         wait(dut.game.screen==2);
         if(dut.game.points !== 1 || dut.game.miss_count !== dut.game.chart_note_count-1 ||
-           dut.game.misclick_count !== 1 || dut.game.overrun) $stop;
+           dut.game.misclick_count !== 1 || dut.game.overrun || dut.game.total_score !== 100 ||
+           dut.game.combo !== 0 || dut.game.longest_streak !== 1) $stop;
         release dut.game.session.elapsed_ms;
         held_keys=16'b1 << (SONG_ID+1);
         wait(dut.game.home);
         repeat(1000) @(negedge clk);
         if(!dut.game.home || dut.game.loading || dut.game.points !== 0 ||
-           dut.game.miss_count !== 0 || dut.game.misclick_count !== 0) $stop;
-        $display("PASS: song menu, UART, keypad, hits/misses/misclicks, results and held-key home return");
+           dut.game.miss_count !== 0 || dut.game.misclick_count !== 0 ||
+           dut.game.total_score !== 0 || dut.game.longest_streak !== 0) $stop;
+        $display("PASS: song menu, UART, combo scoring, penalties, longest streak, results and restart");
         $finish;
     end
     initial begin #100000000; $display("FAIL integration timeout"); $stop; end
