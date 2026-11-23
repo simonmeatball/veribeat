@@ -17,9 +17,11 @@ module clock (
         pixel_phase = 0;
     end
 
-    always @(posedge clk or posedge reset) begin
-        if (reset) reset_pipe <= 2'b11;
-        else reset_pipe <= {reset_pipe[0],1'b0};
+    // Synchronize both reset edges. The output register has no asynchronous
+    // set/reset, so reset-dependent block-RAM addresses and controls change
+    // on clock edges and are covered by normal static timing analysis.
+    always @(posedge clk) begin
+        reset_pipe <= {reset_pipe[0],reset};
     end
     assign reset_sync = reset_pipe[1];
 

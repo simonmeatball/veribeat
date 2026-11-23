@@ -11,11 +11,11 @@ module song_library #(
     input wire [1:0] song,
     input wire enable,
     input wire [9:0] address,
-    output reg [39:0] data,
+    output reg [34:0] data,
     output reg [10:0] note_count,
     output reg [31:0] duration_ms
 );
-    wire [39:0] data0, data1, data2;
+    wire [34:0] data0, data1, data2;
     notes #(.CHART_FILE(SONG0_FILE)) song0(clk,enable && song==0,address,data0);
     notes #(.CHART_FILE(SONG1_FILE)) song1(clk,enable && song==1,address,data1);
     notes #(.CHART_FILE(SONG2_FILE)) song2(clk,enable && song==2,address,data2);

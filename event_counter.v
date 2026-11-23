@@ -16,7 +16,9 @@ module event_counter #(
     // Queue simultaneous events and drain one point per cycle so decimal
     // carry propagation stays short for hits, missed notes, and misclicks.
     reg [WIDTH-1:0] pending;
-    wire [15:0] events = {{(16-INPUT_BITS){1'b0}},hits};
+    // Unsigned assignment zero-extends narrower inputs, including the
+    // full-width INPUT_BITS=16 case without a zero-length replication.
+    wire [15:0] events = hits;
     wire [2:0] groups [0:3];
     genvar group;
     generate for(group=0;group<4;group=group+1) begin : popcount

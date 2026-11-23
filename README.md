@@ -197,7 +197,9 @@ and the feedback tail has elapsed.
 ### Architecture and simulation
 
 `song_library.v` selects one of three synchronous `notes.v` ROMs and its
-metadata. `game_session.v` controls home, loading, play, pause, and results.
+metadata. Memory files retain their 40-bit format. `notes.v` removes the
+five reserved padding bits before sending the 35-bit valid/time/lane word
+to gameplay. `game_session.v` controls home, loading, play, pause, and results.
 `menu_display.v` draws the home/loading/results screens with three 100 MHz
 pipeline stages that settle within the existing four-cycle pixel interval.
 `event_counter.v` instances count hits, individual missed notes, and misclick events.
@@ -242,10 +244,14 @@ timing closure require board/tool verification.
 ## VGA timing
 
 All sequential logic uses the 100 MHz system clock. `clock.v` synchronizes
-reset release and emits `pixel_tick` once every four cycles, giving a 25 MHz
-pixel rate. `vga.v` generates a 640×480 raster with totals of 800×525 pixels,
+both reset edges through two flip-flops and emits `pixel_tick` once every
+four cycles, giving a 25 MHz pixel rate. `vga.v` generates a 640×480 raster
+with totals of 800×525 pixels,
 approximately 59.52 frames per second. RGB, sync, and blanking are registered
-on the same pixel enable.
+on the same pixel enable. Reset assertion and release reach the game after
+two clock samples. The reset synchronizer and VGA output registers use
+clock-only sequential blocks so inferred RAM control paths have timed reset
+behavior.
 
 `frame_tick` marks the end of the raster. The gameplay controller prepares
 the next tile mask between that boundary and the playfield at line 48.

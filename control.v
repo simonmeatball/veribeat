@@ -14,7 +14,7 @@ module control #(
     input wire [3:0] lane_press,
     output wire [9:0] chart_address,
     output wire chart_enable,
-    input wire [39:0] chart_data,
+    input wire [34:0] chart_data,
     input wire [10:0] chart_note_count,
     output reg front_bank,
     output reg front_valid,
@@ -60,8 +60,8 @@ module control #(
     reg [2:0] hit_count;
     integer lane;
 
-    // ROM word: bit 39 valid, bits 33:2 target milliseconds, bits 1:0 lane.
-    wire note_valid = chart_data[39];
+    // Gameplay word: bit 34 valid, bits 33:2 target milliseconds, bits 1:0 lane.
+    wire note_valid = chart_data[34];
     wire [31:0] note_time = chart_data[33:2];
     wire [1:0] note_lane = chart_data[1:0];
     wire signed [32:0] next_delta = snapshot_time - $signed({1'b0, note_time});

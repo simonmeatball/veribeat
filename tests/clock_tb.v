@@ -37,6 +37,10 @@ module clock_tb;
         repeat (103) @(negedge clk);
         #2 reset = 1;
         #1;
+        if (reset_sync !== 1'b0) fail;
+        @(posedge clk); #1;
+        if (reset_sync !== 1'b0) fail;
+        @(posedge clk); #1;
         if (reset_sync !== 1'b1 || pixel_tick !== 1'b0) fail;
         repeat (3) @(negedge clk);
         #2 reset = 0;
@@ -45,7 +49,7 @@ module clock_tb;
         @(posedge clk); #1;
         if (reset_sync !== 1'b0) fail;
         repeat (120) @(negedge clk);
-        $display("PASS: one-in-four pixel enable, startup phase and synchronized reset (%0d cycles)", checks);
+        $display("PASS: one-in-four pixel enable, startup phase and clock-synchronous reset edges (%0d cycles)", checks);
         $finish;
     end
 endmodule

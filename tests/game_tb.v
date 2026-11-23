@@ -8,7 +8,7 @@ module game_tb;
     reg [3:0] press=0;
     wire [9:0] address;
     wire enable;
-    wire [39:0] data;
+    wire [34:0] data;
     wire front, valid, write_enable, clear_pixel, overrun;
     wire [10:0] write_address, resolved_count;
     wire [1:0] bits, pixel;

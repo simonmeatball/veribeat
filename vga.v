@@ -62,7 +62,7 @@ module vga (
     // Register RGB and both syncs on the SAME pixel enable. This prevents
     // counter/decode glitches reaching the analog VGA connector. All five
     // outputs describe the sampled x/y and have the same one-pixel latency.
-    always @(posedge clk or posedge reset) begin
+    always @(posedge clk) begin
         if (reset) begin
             hsync <= 1'b1;
             vsync <= 1'b1;

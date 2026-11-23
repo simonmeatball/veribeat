@@ -23,7 +23,7 @@ module menu_display (
     localparam [4:0] TEXT_SONG0_CHOICE = 5'd2;
     localparam [4:0] TEXT_SONG1_CHOICE = 5'd3;
     localparam [4:0] TEXT_SONG2_CHOICE = 5'd4;
-    localparam [4:0] TEXT_PLAY_KEYS = 5'd5;
+    localparam [4:0] TEXT_SELECT_KEYS = 5'd5;
     localparam [4:0] TEXT_RESULTS = 5'd6;
     localparam [4:0] TEXT_HITS = 5'd7;
     localparam [4:0] TEXT_MISSES = 5'd8;
@@ -71,7 +71,7 @@ module menu_display (
                 TEXT_SONG0_CHOICE: line = "1 YORU NI KAKERU                ";
                 TEXT_SONG1_CHOICE: line = "2 APT.                          ";
                 TEXT_SONG2_CHOICE: line = "3 SUNFLOWER                     ";
-                TEXT_PLAY_KEYS: line = "0 F E D TO PLAY                 ";
+                TEXT_SELECT_KEYS: line = "PRESS 1 2 3 TO START            ";
                 TEXT_RESULTS: line = "RESULTS                         ";
                 TEXT_HITS: line = "HITS                            ";
                 TEXT_MISSES: line = "MISSES                          ";
@@ -170,8 +170,8 @@ module menu_display (
                     text_y=336;
                 end
                 else if (y>=416 && y<436) begin
-                    message=TEXT_PLAY_KEYS;
-                    text_x=208;
+                    message=TEXT_SELECT_KEYS;
+                    text_x=160;
                     text_y=416;
                     ink=COLOR_PURPLE;
                 end

@@ -56,7 +56,7 @@ module veribeat #(
     wire [15:0] misclick_events;
     wire [9:0] chart_address;
     wire chart_enable;
-    wire [39:0] chart_data;
+    wire [34:0] chart_data;
     wire front_bank, front_valid, mask_write, mask_clear, overrun;
     wire [10:0] mask_address;
     wire [1:0] mask_bits, tile_pixel;

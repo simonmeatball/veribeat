@@ -5,7 +5,7 @@ module chart_size_case #(parameter COUNT=0)(output reg done=0);
     reg [3:0] press=0;
     wire [9:0] address;
     wire enable;
-    wire [39:0] data;
+    wire [34:0] data;
     wire [3:0] hits;
     wire [10:0] points, resolved_count;
     wire [15:0] digits;

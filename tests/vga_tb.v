@@ -61,10 +61,13 @@ module vga_tb;
         end
     end
     initial begin
-        // Exercise asynchronous assertion during a partial frame.
+        // Exercise clock-synchronous assertion during a partial frame.
         repeat(10000) @(negedge clk);
         #2 reset_button=1;
         #1;
+        if(reset !== 0) fail("reset asserted between clock edges");
+        @(posedge clk); #1; if(reset !== 0) fail("reset asserted before synchronization");
+        @(posedge clk); #1;
         if(reset !== 1 || pixel_tick !== 0) fail("reset assertion");
         repeat(3) @(negedge clk);
         #2 reset_button=0;
