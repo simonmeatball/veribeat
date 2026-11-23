@@ -42,6 +42,18 @@ module menu_display_tb;
     endtask
     initial begin
         repeat(3) @(negedge clk); reset=0;
+        // Layout, character, and glyph each occupy a distinct clock stage.
+        x=256; y=64;
+        repeat(2) begin
+            @(negedge clk);
+            if(color !== 12'h012) begin
+                $display("FAIL: menu pipeline collapsed before the third stage"); $stop;
+            end
+        end
+        @(negedge clk);
+        if(color !== 12'h6ef) begin
+            $display("FAIL: menu pixel did not settle within three stages"); $stop;
+        end
         check_pixel(256,64,12'h6ef); // V in VERIBEAT.
         check_pixel(260,64,12'h124); // Space between V's top strokes.
         check_pixel(112,180,12'h6ef); // Selection card edge.

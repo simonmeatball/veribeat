@@ -9,38 +9,17 @@ module display #(
     input  wire [1:0] tile_pixel,
     input  wire [15:0] pulse_ages,
     input  wire [3:0]  pulse_hit,
-    input  wire [15:0] digits,
     output reg  [11:0] color
 );
-    localparam FIELD_LEFT = 64;
-    localparam FIELD_RIGHT = 576;
-    localparam FIELD_TOP = 48;
-    localparam HIT_Y = 433;
-    localparam PAD_TOP = 410;
-    localparam PAD_BOTTOM = 456;
+    localparam FIELD_LEFT = `FIELD_LEFT;
+    localparam FIELD_RIGHT = `FIELD_RIGHT;
+    localparam FIELD_TOP = `FIELD_TOP;
+    localparam HIT_Y = `PAD_CENTER_Y;
+    localparam PAD_TOP = `PAD_TOP;
+    localparam PAD_BOTTOM = `PAD_BOTTOM;
 
-    // Three by five pixel font, most significant bit at the top left.
-    function [14:0] digit;
-        input [3:0] value;
-        begin
-            case (value)
-                0: digit = 15'b111_101_101_101_111;
-                1: digit = 15'b010_110_010_010_111;
-                2: digit = 15'b111_001_111_100_111;
-                3: digit = 15'b111_001_111_001_111;
-                4: digit = 15'b101_101_111_001_001;
-                5: digit = 15'b111_100_111_001_111;
-                6: digit = 15'b111_100_111_101_111;
-                7: digit = 15'b111_001_010_010_010;
-                8: digit = 15'b111_101_111_101_111;
-                9: digit = 15'b111_101_111_001_111;
-                4'hD: digit = 15'b110_101_101_101_110;
-                4'hE: digit = 15'b111_100_110_100_111;
-                4'hF: digit = 15'b111_100_110_100_100;
-                default: digit = 0;
-            endcase
-        end
-    endfunction
+    `include "game_defs.vh"
+    `include "font3x5.vh"
 
     function glyph_pixel;
         input [14:0] glyph;
@@ -58,7 +37,7 @@ module display #(
     endfunction
 
     // The four lanes are 128 pixels wide, so a single lane owns each pixel.
-    wire [9:0] field_x = x - 10'd64;
+    wire [9:0] field_x = x - FIELD_LEFT;
     wire [1:0] pixel_lane = field_x[8:7];
     wire [6:0] lane_x = field_x[6:0];
     wire [3:0] pad_key = LANE_KEYS[4*pixel_lane +: 4];
@@ -76,15 +55,11 @@ module display #(
     wire [9:0] pulse_top = PAD_TOP - spread;
     wire [9:0] pulse_bottom = PAD_BOTTOM - 1 + spread;
 
-    wire [1:0] digit_index = x[5:4];
-    wire [3:0] score_digit = digits[4*(3-digit_index) +: 4];
+    wire [7:0] pad_label = pad_key < 10 ? 8'd48 + {4'b0,pad_key} :
+                          8'd65 + {4'b0,pad_key} - 8'd10;
     always @* begin
         color = 12'h012;
-        if (x >= 64 && x < 128 && y >= 15 && y < 35 && x[3:0] < 12 &&
-            glyph_pixel(digit(score_digit), {1'b0,x[3:0]}, y[4:0] - 5'd15))
-            color = 12'hfff;
-
-        if (x >= FIELD_LEFT && x < FIELD_RIGHT && y >= FIELD_TOP && y < 470) begin
+        if (x >= FIELD_LEFT && x < FIELD_RIGHT && y >= FIELD_TOP && y < `FIELD_BOTTOM) begin
             color = 12'h113;
             if (y[4:0] == 0)
                 color = 12'h224;
@@ -105,7 +80,7 @@ module display #(
                     lane_x < 18 || lane_x >= 110)
                     color = 12'h96e;
                 if (lane_x >= 58 && lane_x < 70 && y >= 423 && y < 443 &&
-                    glyph_pixel(digit(pad_key), lane_x[4:0] - 5'd26, y[4:0] - 5'd7))
+                    glyph_pixel(glyph3x5(pad_label), lane_x[4:0] - 5'd26, y[4:0] - 5'd7))
                     color = 12'hfff;
             end
 

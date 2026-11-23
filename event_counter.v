@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 `default_nettype none
-module score #(
+module event_counter #(
     parameter integer WIDTH = 11,
     parameter integer LIMIT = 1024,
     parameter integer INPUT_BITS = 4
@@ -11,6 +11,8 @@ module score #(
     output reg [WIDTH-1:0] points,
     output reg [15:0] digits
 );
+    // Each set bit in hits contributes one event. points is the binary count;
+    // digits is the matching four-digit BCD representation.
     // Queue simultaneous events and drain one point per cycle so decimal
     // carry propagation stays short for hits, missed notes, and misclicks.
     reg [WIDTH-1:0] pending;

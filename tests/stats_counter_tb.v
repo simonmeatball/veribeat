@@ -6,7 +6,7 @@ module stats_counter_tb;
     wire [15:0] digits;
     integer i;
     always #5 clk=~clk;
-    score #(.WIDTH(14),.LIMIT(9999),.INPUT_BITS(16)) dut(clk,reset,events,count,digits);
+    event_counter #(.WIDTH(14),.LIMIT(9999),.INPUT_BITS(16)) dut(clk,reset,events,count,digits);
     initial begin
         repeat(3) @(negedge clk); reset=0;
         events=16'hffff;

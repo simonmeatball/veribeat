@@ -26,10 +26,10 @@ module game_tb;
     always #5 clk=~clk;
 
     notes chart(clk, enable, address, data);
-    control #(.NOTE_COUNT(1024)) dut (
+    control dut (
         .clk(clk), .reset(reset), .frame_tick(frame_tick), .publish_tick(publish_tick),
         .running(1'b1), .elapsed_ms(elapsed), .lane_press(press),
-        .chart_address(address), .chart_enable(enable), .chart_data(data),.chart_note_count(11'd0),
+        .chart_address(address), .chart_enable(enable), .chart_data(data),.chart_note_count(11'd1024),
         .front_bank(front), .front_valid(valid), .mask_write(write_enable),
         .mask_clear(clear_pixel), .mask_address(write_address), .mask_bits(bits),
         .pulse_ages(ages), .pulse_hit(hit_color), .hits(hits),
@@ -37,10 +37,10 @@ module game_tb;
         .note_miss(note_miss), .misclicks(misclicks)
     );
     tile_mask mask(clk,front,write_enable,clear_pixel,write_address,bits,read_address,pixel);
-    score tally(clk,reset,hits,points,digits);
-    score missed(.clk(clk),.reset(reset),.hits({3'b0,note_miss}),.points(miss_count),.digits());
-    score invalid_presses(.clk(clk),.reset(reset),.hits(misclicks),.points(misclick_count),.digits());
-    display renderer(x,y,valid ? pixel : 2'b0,ages,hit_color,digits,color);
+    event_counter tally(clk,reset,hits,points,digits);
+    event_counter missed(.clk(clk),.reset(reset),.hits({3'b0,note_miss}),.points(miss_count),.digits());
+    event_counter invalid_presses(.clk(clk),.reset(reset),.hits(misclicks),.points(misclick_count),.digits());
+    display renderer(x,y,valid ? pixel : 2'b0,ages,hit_color,color);
 
     task build_frame;
         input [31:0] time_ms;
@@ -49,7 +49,7 @@ module game_tb;
             @(negedge clk); elapsed=time_ms; press=lanes; frame_tick=1;
             @(negedge clk); frame_tick=0; press=0;
             cycles=0;
-            while (dut.state != 8 && cycles < 150000) begin
+            while (dut.state != dut.READY && cycles < 150000) begin
                 @(negedge clk); cycles=cycles+1;
             end
             if (cycles >= 150000) begin $display("FAIL frame deadline"); $stop; end

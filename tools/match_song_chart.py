@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -152,12 +153,19 @@ def assign_lanes(analysis, ordered):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('audio', type=Path)
-    parser.add_argument('--chart', type=Path, default=Path('charts/song_0.txt'))
-    parser.add_argument('--song-id', type=int, choices=range(10), default=0)
+    parser.add_argument('--chart', type=Path, help='Defaults to charts/song_N.txt')
+    parser.add_argument('--song-id', type=int, choices=range(10), help='Inferred from song_N.mp3 when omitted')
     parser.add_argument('--title', help='Track title for the chart comment')
-    parser.add_argument('--memory', type=Path, default=Path('notes_data.mem'))
-    parser.add_argument('--config', type=Path, default=Path('notes_config.vh'))
+    parser.add_argument('--memory', type=Path, help='Defaults to the chart filename with a .mem extension')
+    parser.add_argument('--config', type=Path, help='Optional standalone metadata header')
     args = parser.parse_args()
+    if args.song_id is None:
+        match = re.fullmatch(r'song_([0-9])', args.audio.stem)
+        if match is None:
+            parser.error('specify --song-id for an audio filename other than song_N.mp3')
+        args.song_id = int(match.group(1))
+    if args.chart is None:
+        args.chart = Path(f'charts/song_{args.song_id}.txt')
     analysis = analyze(args.audio)
     ordered, kinds = select_events(analysis)
     notes, chords = assign_lanes(analysis, ordered)
@@ -178,7 +186,7 @@ def main():
     lines.extend(f'{time} {lane}' for time, lane in notes)
     args.chart.parent.mkdir(parents=True, exist_ok=True)
     args.chart.write_text('\n'.join(lines)+'\n')
-    compile_chart(args.chart, args.memory, args.config)
+    compile_chart(args.chart, args.memory or args.chart.with_suffix('.mem'), args.config)
     event_times = np.array([analysis['times'][index] for index in ordered])
     phase = analysis['phase']
     subdivision = analysis['period']/4

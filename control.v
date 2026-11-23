@@ -2,8 +2,6 @@
 `default_nettype none
 
 module control #(
-    parameter integer NOTE_COUNT = 8,
-    parameter DYNAMIC_CHART = 0,
     parameter integer PRE_ROLL_MS = 1400,
     parameter integer HIT_WINDOW_MS = 160
 ) (
@@ -34,9 +32,9 @@ module control #(
 );
     localparam IDLE=0, CLEAR=1, REQUEST=2, WAIT_ROM=3, JUDGE=4,
                COMMIT=5, GEOMETRY=6, PAINT=7, READY=8, FEEDBACK=9;
-    localparam signed [15:0] TILE_HEIGHT = 36;
-    localparam signed [15:0] PAD_CENTER_Y = 433;
-    wire [10:0] total_notes = DYNAMIC_CHART ? chart_note_count : NOTE_COUNT;
+    `include "game_defs.vh"
+    localparam signed [15:0] TILE_HEIGHT = `TILE_HEIGHT;
+    localparam signed [15:0] PAD_CENTER_Y = `PAD_CENTER_Y;
     reg [3:0] state;
     reg painting;
     reg [10:0] index;
@@ -62,9 +60,12 @@ module control #(
     reg [2:0] hit_count;
     integer lane;
 
+    // ROM word: bit 39 valid, bits 33:2 target milliseconds, bits 1:0 lane.
+    wire note_valid = chart_data[39];
+    wire [31:0] note_time = chart_data[33:2];
     wire [1:0] note_lane = chart_data[1:0];
-    wire signed [32:0] next_delta = snapshot_time - $signed({1'b0, chart_data[33:2]});
-    wire signed [32:0] next_press_delta = captured_time[note_lane] - $signed({1'b0, chart_data[33:2]});
+    wire signed [32:0] next_delta = snapshot_time - $signed({1'b0, note_time});
+    wire signed [32:0] next_press_delta = captured_time[note_lane] - $signed({1'b0, note_time});
     wire eligible = press_delta >= -HIT_WINDOW_MS && press_delta <= HIT_WINDOW_MS;
     // Only evaluate this narrow geometry for notes within the visible interval.
     wire signed [15:0] offset_pixels = ($signed(delta[15:0]) * 16'sd5) >>> 4;
@@ -146,21 +147,24 @@ module control #(
                 end
             end
             case (state)
+                // Clear the unpublished mask bank.
                 CLEAR: begin
                     if (clear_address == 2047) begin
                         index <= 0;
-                        state <= total_notes == 0 ? COMMIT : REQUEST;
+                        state <= chart_note_count == 0 ? COMMIT : REQUEST;
                     end else clear_address <= clear_address + 1'b1;
                 end
+                // Request one synchronous ROM word.
                 REQUEST: state <= WAIT_ROM;
+                // Register timing differences after the ROM read.
                 WAIT_ROM: begin
-                    // Register the time difference before judgment or geometry.
                     delta <= next_delta;
                     press_delta <= next_press_delta;
                     state <= painting ? GEOMETRY : JUDGE;
                 end
+                // Select one oldest eligible note per lane.
                 JUDGE: begin
-                    if (chart_data[39] && !resolved[index[9:0]]) begin
+                    if (note_valid && !resolved[index[9:0]]) begin
                         // Charts are time ordered. Claim only the oldest
                         // eligible note for each physical press.
                         if (eligible && captured_press[note_lane] &&
@@ -169,9 +173,13 @@ module control #(
                             candidate_index[note_lane] <= index[9:0];
                         end
                     end
-                    if (index + 11'd1 == total_notes) state <= COMMIT;
-                    else begin index <= index + 1'b1; state <= REQUEST; end
+                    if (index + 11'd1 == chart_note_count) state <= COMMIT;
+                    else begin
+                        index <= index + 1'b1;
+                        state <= REQUEST;
+                    end
                 end
+                // Resolve selected hits before any expirations.
                 COMMIT: begin
                     hits <= selected_hits;
                     misclicks <= captured_press & ~selected_hits;
@@ -181,34 +189,43 @@ module control #(
                     end
                     painting <= 1;
                     index <= 0;
-                    state <= total_notes == 0 ? FEEDBACK : REQUEST;
+                    state <= chart_note_count == 0 ? FEEDBACK : REQUEST;
                 end
+                // Count expired notes and prepare visible tile bounds.
                 GEOMETRY: begin
                     // Consume the chosen hits before expiring other notes.
                     // An on-time buffered press remains valid if the frame
                     // snapshot arrives just beyond its late boundary.
-                    if (chart_data[39] && !resolved[index[9:0]] && delta > HIT_WINDOW_MS) begin
+                    if (note_valid && !resolved[index[9:0]] && delta > HIT_WINDOW_MS) begin
                         resolved[index[9:0]] <= 1;
                         resolved_count <= resolved_count + 1'b1;
                         missed[note_lane] <= 1;
                         note_miss <= 1;
                     end
-                    if (chart_data[39] && !resolved[index[9:0]] &&
-                        delta >= -1300 && delta <= HIT_WINDOW_MS && bottom > 48 && bottom < 506) begin
+                    if (note_valid && !resolved[index[9:0]] &&
+                        delta >= -1300 && delta <= HIT_WINDOW_MS && bottom > `FIELD_TOP && bottom < `FIELD_BOTTOM + TILE_HEIGHT) begin
                         tile_top <= bottom - TILE_HEIGHT;
                         tile_bottom <= bottom[8:0];
-                        paint_row <= bottom < 48 + TILE_HEIGHT ? 9'd48 : bottom - TILE_HEIGHT;
+                        paint_row <= bottom < `FIELD_TOP + TILE_HEIGHT ? `FIELD_TOP : bottom - TILE_HEIGHT;
                         paint_lane <= note_lane;
                         state <= PAINT;
-                    end else if (index + 11'd1 == total_notes) state <= FEEDBACK;
-                    else begin index <= index + 1'b1; state <= REQUEST; end
+                    end else if (index + 11'd1 == chart_note_count) state <= FEEDBACK;
+                    else begin
+                        index <= index + 1'b1;
+                        state <= REQUEST;
+                    end
                 end
+                // Write one covered row into the back mask.
                 PAINT: begin
                     if (paint_row + 9'd1 == tile_bottom) begin
-                        if (index + 11'd1 == total_notes) state <= FEEDBACK;
-                        else begin index <= index + 1'b1; state <= REQUEST; end
+                        if (index + 11'd1 == chart_note_count) state <= FEEDBACK;
+                        else begin
+                            index <= index + 1'b1;
+                            state <= REQUEST;
+                        end
                     end else paint_row <= paint_row + 1'b1;
                 end
+                // Publish the frame's hit/miss pulse state.
                 FEEDBACK: begin
                     for (lane=0; lane<4; lane=lane+1) begin
                         if (selected_hits[lane] || missed[lane] || captured_press[lane]) begin

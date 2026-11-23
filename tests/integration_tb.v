@@ -56,52 +56,52 @@ module integration_tb #(
     initial begin
         repeat(5) @(negedge clk); reset=0;
         wait(commands==1);
-        if(dut.game.running || !dut.game.home) $stop;
+        if(dut.running || !dut.home) $stop;
         held_keys=16'b1 << (SONG_ID+1);
         repeat(700) @(negedge clk);
         held_keys=0;
         wait(commands==4);
-        if(dut.game.running) $stop;
+        if(dut.running) $stop;
         send_ready;
-        wait(dut.game.running);
+        wait(dut.running);
         // Advance to the first chart note while exercising the real VGA,
         // scanner, UART handshake and bank publish signals.
         case(SONG_ID)
-            1: first_target=dut.game.chart.song1.chart[0][33:2]+32'd1400;
-            2: first_target=dut.game.chart.song2.chart[0][33:2]+32'd1400;
-            default: first_target=dut.game.chart.song0.chart[0][33:2]+32'd1400;
+            1: first_target=dut.chart.song1.chart[0][33:2]+32'd1400;
+            2: first_target=dut.chart.song2.chart[0][33:2]+32'd1400;
+            default: first_target=dut.chart.song0.chart[0][33:2]+32'd1400;
         endcase
-        force dut.game.session.elapsed_ms=first_target;
+        force dut.session.elapsed_ms=first_target;
         case(SONG_ID)
-            1: held=4'b0001 << dut.game.chart.song1.chart[0][1:0];
-            2: held=4'b0001 << dut.game.chart.song2.chart[0][1:0];
-            default: held=4'b0001 << dut.game.chart.song0.chart[0][1:0];
+            1: held=4'b0001 << dut.chart.song1.chart[0][1:0];
+            2: held=4'b0001 << dut.chart.song2.chart[0][1:0];
+            default: held=4'b0001 << dut.chart.song0.chart[0][1:0];
         endcase
         held_keys = {held[1],held[2],held[3],12'b0,held[0]};
-        wait(dut.game.points==1);
+        wait(dut.hit_count==1);
         held=0; held_keys=0;
-        wait(dut.game.front_valid);
-        if(dut.game.overrun || dut.game.failed || dut.game.misclick_count !== 0 ||
-           dut.game.total_score !== 100 || dut.game.combo !== 1 || dut.game.longest_streak !== 1) $stop;
+        wait(dut.front_valid);
+        if(dut.overrun || dut.failed || dut.misclick_count !== 0 ||
+           dut.total_score !== 100 || dut.combo !== 1 || dut.longest_streak !== 1) $stop;
         // A non-lane key during play is a misclick, independent of song selection.
         held_keys=16'h0010;
-        wait(dut.game.misclick_count==1);
-        if(dut.game.combo !== 0 || dut.game.longest_streak !== 1) $stop;
+        wait(dut.misclick_count==1);
+        if(dut.combo !== 0 || dut.longest_streak !== 1) $stop;
         held_keys=0;
         // Resolve the rest of the selected chart and display its final stats.
-        first_target=dut.game.chart_duration_ms+32'd1900;
-        wait(dut.game.finished);
-        wait(dut.game.screen==2);
-        if(dut.game.points !== 1 || dut.game.miss_count !== dut.game.chart_note_count-1 ||
-           dut.game.misclick_count !== 1 || dut.game.overrun || dut.game.total_score !== 100 ||
-           dut.game.combo !== 0 || dut.game.longest_streak !== 1) $stop;
-        release dut.game.session.elapsed_ms;
+        first_target=dut.chart_duration_ms+32'd1900;
+        wait(dut.finished);
+        wait(dut.screen==2);
+        if(dut.hit_count !== 1 || dut.miss_count !== dut.chart_note_count-1 ||
+           dut.misclick_count !== 1 || dut.overrun || dut.total_score !== 100 ||
+           dut.combo !== 0 || dut.longest_streak !== 1) $stop;
+        release dut.session.elapsed_ms;
         held_keys=16'b1 << (SONG_ID+1);
-        wait(dut.game.home);
+        wait(dut.home);
         repeat(1000) @(negedge clk);
-        if(!dut.game.home || dut.game.loading || dut.game.points !== 0 ||
-           dut.game.miss_count !== 0 || dut.game.misclick_count !== 0 ||
-           dut.game.total_score !== 0 || dut.game.longest_streak !== 0) $stop;
+        if(!dut.home || dut.loading || dut.hit_count !== 0 ||
+           dut.miss_count !== 0 || dut.misclick_count !== 0 ||
+           dut.total_score !== 0 || dut.longest_streak !== 0) $stop;
         $display("PASS: song menu, UART, combo scoring, penalties, longest streak, results and restart");
         $finish;
     end

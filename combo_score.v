@@ -17,13 +17,15 @@ module combo_score (
     output reg [15:0] longest_digits
 );
     reg [10:0] pending_hits;
-    reg suppressed;
-    wire broken = note_miss || |misclicks;
+    // A penalty cancels combo growth for already-queued hits. The next
+    // batch can start a new streak once those hits have drained.
+    reg block_pending_combo;
+    wire penalty = note_miss || |misclicks;
     wire [2:0] incoming = {2'b0,hits[0]} + {2'b0,hits[1]} +
                           {2'b0,hits[2]} + {2'b0,hits[3]};
     wire consume = pending_hits != 0;
     wire [10:0] next_combo = combo == 1024 ? combo : combo + 1'b1;
-    wire [2:0] multiplier = broken || suppressed ? 3'd1 :
+    wire [2:0] multiplier = penalty || block_pending_combo ? 3'd1 :
         next_combo >= 30 ? 3'd4 : next_combo >= 20 ? 3'd3 :
         next_combo >= 10 ? 3'd2 : 3'd1;
     wire [3:0] awards = consume ? 4'b1111 >> (4-multiplier) : 4'b0;
@@ -31,7 +33,7 @@ module combo_score (
     wire [15:0] hundred_digits;
     // Every award is a multiple of 100. Four BCD digits plus two zeroes
     // represent the maximum perfect-game score of 403900 without a divider.
-    score #(.WIDTH(13),.LIMIT(9999)) weighted_points (
+    event_counter #(.WIDTH(13),.LIMIT(9999)) weighted_points (
         .clk(clk),.reset(reset),.hits(awards),.points(hundreds),.digits(hundred_digits)
     );
     assign total_score = {7'b0,hundreds} * 20'd100;
@@ -63,19 +65,19 @@ module combo_score (
     always @(posedge clk) begin
         if(reset) begin
             pending_hits<=0;
-            suppressed<=0;
+            block_pending_combo<=0;
             combo<=0;
             combo_digits<=0;
             longest_streak<=0;
             longest_digits<=0;
         end else begin
             pending_hits<=pending_hits+incoming-consume;
-            if(pending_hits==0 && incoming!=0) suppressed<=broken;
-            else if(broken) suppressed<=1;
-            if(broken) begin
+            if(pending_hits==0 && incoming!=0) block_pending_combo<=penalty;
+            else if(penalty) block_pending_combo<=1;
+            if(penalty) begin
                 combo<=0;
                 combo_digits<=0;
-            end else if(consume && !suppressed) begin
+            end else if(consume && !block_pending_combo) begin
                 combo<=next_combo;
                 combo_digits<=next_digits;
                 if(next_combo>longest_streak) begin

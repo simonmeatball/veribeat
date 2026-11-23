@@ -18,17 +18,17 @@ module hit_timing_tb;
     integer cycles;
     always #5 clk=~clk;
     notes chart(clk,enable,address,data);
-    control #(.NOTE_COUNT(4)) dut (
+    control dut (
         .clk(clk),.reset(reset),.frame_tick(frame_tick),.publish_tick(publish_tick),
         .running(1'b1),.elapsed_ms(elapsed),.lane_press(press),
-        .chart_address(address),.chart_enable(enable),.chart_data(data),.chart_note_count(11'd0),
+        .chart_address(address),.chart_enable(enable),.chart_data(data),.chart_note_count(11'd4),
         .front_bank(front),.front_valid(valid),.mask_write(write_enable),
         .mask_clear(clear_pixel),.mask_address(write_address),.mask_bits(bits),
         .pulse_ages(ages),.pulse_hit(hit_color),.hits(hits),
         .resolved_count(resolved_count),.overrun(overrun)
     );
     tile_mask mask(clk,front,write_enable,clear_pixel,write_address,bits,read_address,pixel);
-    score tally(clk,reset,hits,points,digits);
+    event_counter tally(clk,reset,hits,points,digits);
 
     task restart;
         begin
@@ -43,7 +43,7 @@ module hit_timing_tb;
             @(negedge clk); elapsed=time_ms; frame_tick=1;
             @(negedge clk); frame_tick=0;
             cycles=0;
-            while(dut.state != 8 && cycles < 150000) begin
+            while(dut.state != dut.READY && cycles < 150000) begin
                 @(negedge clk); cycles=cycles+1;
             end
             if(cycles >= 150000) $stop;

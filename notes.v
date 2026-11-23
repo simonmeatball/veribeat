@@ -2,7 +2,7 @@
 `default_nettype none
 
 module notes #(
-    parameter CHART_FILE = "notes_data.mem"
+    parameter CHART_FILE = "charts/song_0.mem"
 ) (
     input wire clk,
     input wire enable,

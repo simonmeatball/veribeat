@@ -14,14 +14,14 @@ module chart_size_case #(parameter COUNT=0)(output reg done=0);
     reg [31:0] target;
     always #5 clk=~clk;
     notes chart(clk,enable,address,data);
-    control #(.NOTE_COUNT(COUNT)) dut (
+    control dut (
         .clk(clk),.reset(reset),.frame_tick(frame_tick),.publish_tick(publish_tick),
         .running(1'b1),.elapsed_ms(elapsed),.lane_press(press),
-        .chart_address(address),.chart_enable(enable),.chart_data(data),.chart_note_count(11'd0),
+        .chart_address(address),.chart_enable(enable),.chart_data(data),.chart_note_count(COUNT[10:0]),
         .front_bank(),.front_valid(),.mask_write(),.mask_clear(),.mask_address(),.mask_bits(),
         .pulse_ages(),.pulse_hit(),.hits(hits),.resolved_count(resolved_count),.overrun(overrun)
     );
-    score tally(clk,reset,hits,points,digits);
+    event_counter tally(clk,reset,hits,points,digits);
     task start_frame;
         begin
             @(negedge clk); frame_tick=1;
@@ -30,7 +30,7 @@ module chart_size_case #(parameter COUNT=0)(output reg done=0);
     endtask
     task publish;
         begin
-            wait(dut.state==8);
+            wait(dut.state==dut.READY);
             @(negedge clk); publish_tick=1;
             @(negedge clk); publish_tick=0;
             if(overrun) $stop;

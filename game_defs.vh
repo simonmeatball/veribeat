@@ -1,0 +1,18 @@
+`ifndef VERIBEAT_GAME_DEFS
+`define VERIBEAT_GAME_DEFS
+
+`define SCREEN_HOME 2'd0
+`define SCREEN_GAME 2'd1
+`define SCREEN_RESULTS 2'd2
+`define SCREEN_LOADING 2'd3
+
+`define FIELD_LEFT 64
+`define FIELD_RIGHT 576
+`define FIELD_TOP 48
+`define FIELD_BOTTOM 470
+`define PAD_TOP 410
+`define PAD_BOTTOM 456
+`define PAD_CENTER_Y 433
+`define TILE_HEIGHT 36
+
+`endif

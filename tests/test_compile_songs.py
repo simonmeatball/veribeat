@@ -22,6 +22,7 @@ class SongLibraryCompilerTest(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             header = root / 'song_library_config.vh'
             self.assertIn('`define SONG_2_NOTE_COUNT 1', header.read_text())
+            self.assertFalse(list(charts.glob("*.vh")))
             generated = [header] + list(charts.glob('*.mem')) + list(charts.glob('*.vh'))
             before = {path: path.read_bytes() for path in generated}
             source = charts / 'song_2.txt'
