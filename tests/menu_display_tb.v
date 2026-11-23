@@ -2,8 +2,10 @@
 module menu_display_tb;
     reg clk=0, reset=1;
     reg [9:0] x=0,y=0;
-    reg [1:0] screen=0,song=0;
+    reg [2:0] screen=0;
+    reg [1:0] song=0,countdown=3;
     reg failed=0;
+    reg [9:0] progress_pixels=0;
     wire [11:0] color;
     integer column,row,file;
     always #5 clk=~clk;
@@ -11,6 +13,8 @@ module menu_display_tb;
     menu_display dut(.clk(clk),.reset(reset),.x(x),.y(y),.screen(screen),.song(song),.failed(failed),
         .hit_digits(16'h0843),.miss_digits(16'h0011),.misclick_digits(16'h0027),
         .score_digits(24'h123400),.combo_digits(16'h0042),.longest_digits(16'h0321),
+        .progress_pixels(progress_pixels),
+        .countdown(countdown),
         .hud_pixel(hud_pixel),.color(color));
     task check_pixel;
         input [9:0] px,py;
@@ -25,7 +29,7 @@ module menu_display_tb;
         end
     endtask
     task render;
-        input [1:0] mode;
+        input [2:0] mode;
         input [511:0] path;
         begin
             screen=mode;
@@ -58,6 +62,15 @@ module menu_display_tb;
         check_pixel(260,64,12'h124); // Space between V's top strokes.
         check_pixel(112,180,12'h6ef); // Selection card edge.
         screen=1;
+        check_pixel(62,6,12'hb8f); // Progress border.
+        check_pixel(64,6,12'h235); // Empty at audio start.
+        progress_pixels=256;
+        check_pixel(319,6,12'h6ef); // Last filled pixel at halfway.
+        check_pixel(320,6,12'h235); // First unfilled pixel at halfway.
+        progress_pixels=512;
+        check_pixel(575,6,12'h6ef); // Full at the end of the song.
+        check_pixel(577,6,12'hb8f); // Right border stays visible.
+        check_pixel(578,6,12'h012); // Outside the track.
         check_pixel(64,15,12'hfff); // Live SCORE label.
         check_pixel(352,15,12'h6ef); // Live COMBO label.
         check_pixel(448,15,12'h6ef); // Combo digits use cyan.
@@ -74,9 +87,25 @@ module menu_display_tb;
         check_pixel(480,320,12'h124); // Final best-streak digit 1, top left blank.
         check_pixel(484,320,12'hfff);
         if(hud_pixel) $stop;
+        screen=4;
+        check_pixel(272,64,12'h6ef); // PAUSED title.
+        check_pixel(112,180,12'h6ef); // Menu card outline.
+        check_pixel(164,176,12'hfff); // Key 1: continue.
+        check_pixel(160,256,12'hfff); // Key 2: restart.
+        check_pixel(160,336,12'hfff); // Key 3: main menu.
+        if(hud_pixel) $stop;
+        screen=5;
+        check_pixel(308,224,12'h6ef); // Large 3, top stroke.
+        countdown=2;
+        check_pixel(308,240,12'h6ef); // Large 2, middle stroke.
+        countdown=1;
+        check_pixel(308,224,12'h124); // Large 1, top-left blank.
+        check_pixel(316,224,12'h6ef); // Large 1, center lit.
         if($test$plusargs("render")) begin
             render(0,"/private/tmp/veribeat-home.ppm");
             render(2,"/private/tmp/veribeat-results.ppm");
+            render(4,"/private/tmp/veribeat-paused.ppm");
+            render(5,"/private/tmp/veribeat-countdown.ppm");
         end
         $display("PASS: home menu, live score/combo HUD, six-digit score and all five result statistics");
         $finish;

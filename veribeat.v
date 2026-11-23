@@ -52,7 +52,8 @@ module veribeat #(
     wire [23:0] score_digits;
     wire [10:0] combo, longest_streak;
     wire [15:0] combo_digits, longest_digits;
-    reg [1:0] screen;
+    reg [2:0] screen;
+    wire [1:0] countdown;
     wire [15:0] misclick_events;
     wire [9:0] chart_address;
     wire chart_enable;
@@ -64,6 +65,7 @@ module veribeat #(
     wire [3:0] pulse_hit, hits;
     wire [10:0] hit_count, resolved_count;
     wire [31:0] elapsed_ms;
+    wire [9:0] progress_pixels;
     wire cmd_load, cmd_play, cmd_stop, cmd_pause, cmd_resume;
     wire audio_ready, audio_error, audio_busy;
     wire game_reset, running, paused, finished, failed;
@@ -88,15 +90,23 @@ module veribeat #(
             if (home) screen <= `SCREEN_HOME;
             else if (finished || failed) screen <= `SCREEN_RESULTS;
             else if (loading) screen <= `SCREEN_LOADING;
+            else if (paused) screen <= `SCREEN_PAUSED;
+            else if (countdown != 0) screen <= `SCREEN_COUNTDOWN;
             else screen <= `SCREEN_GAME;
         end
     end
     assign video_color = screen == `SCREEN_GAME && !hud_pixel ? game_color : menu_color;
+    song_progress progress (
+        .clk(clk), .reset(reset_game), .frame_tick(frame_tick),
+        .elapsed_ms(elapsed_ms), .duration_ms(chart_duration_ms), .pixels(progress_pixels)
+    );
     menu_display menus (
         .clk(clk), .reset(reset), .x(x), .y(y), .screen(screen),
         .song(song_index), .failed(failed), .hit_digits(hit_digits),
         .miss_digits(miss_digits), .misclick_digits(misclick_digits),
         .score_digits(score_digits), .combo_digits(combo_digits), .longest_digits(longest_digits),
+        .progress_pixels(progress_pixels),
+        .countdown(countdown),
         .hud_pixel(hud_pixel), .color(menu_color)
     );
     game_session #(.CYCLES_PER_MS(CYCLES_PER_MS)) session (
@@ -109,7 +119,7 @@ module veribeat #(
         .cmd_load(cmd_load), .cmd_play(cmd_play),
         .cmd_stop(cmd_stop), .cmd_pause(cmd_pause), .cmd_resume(cmd_resume),
         .game_reset(game_reset), .running(running), .elapsed_ms(elapsed_ms),
-        .paused(paused), .finished(finished), .failed(failed)
+        .paused(paused), .countdown(countdown), .finished(finished), .failed(failed)
     );
 
     // Physical keypad input.

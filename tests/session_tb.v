@@ -50,7 +50,8 @@ module session_tb;
                 paused_time=elapsed;
                 repeat(30) @(negedge clk);
                 if(elapsed != paused_time) $stop;
-                button_press(4'b0100);
+                @(negedge clk); song_press=1;
+                @(negedge clk); song_press=0;
                 if(!running) $stop;
             end
             wait(finished);

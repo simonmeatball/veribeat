@@ -8,7 +8,7 @@ module game_session #(
     parameter integer PRE_ROLL_MS = 1400
 ) (
     input wire clk, reset,
-    input wire [3:0] buttons, // restart, pause, resume, stop
+    input wire [3:0] buttons, // Four outer board buttons, all request pause.
     input wire audio_ready, audio_error, audio_busy,
     input wire [10:0] resolved_count,
     input wire [10:0] chart_note_count,
@@ -23,11 +23,13 @@ module game_session #(
     output wire running,
     output reg [31:0] elapsed_ms,
     output wire paused,
+    output wire [1:0] countdown,
     output wire finished,
     output wire failed
 );
     localparam STOP_REQUEST=0, STOP_WAIT=1, LOAD_REQUEST=2, LOAD_WAIT=3,
-               PLAYING=4, PAUSED=5, FINISHED=6, FAILED=7, HOME=8, HOME_STOP=9;
+               PLAYING=4, PAUSED=5, FINISHED=6, FAILED=7, HOME=8, HOME_STOP=9,
+               COUNTDOWN=10;
     reg [3:0] state;
     localparam DIVIDER_BITS = CYCLES_PER_MS > 1 ? $clog2(CYCLES_PER_MS) : 1;
     reg [DIVIDER_BITS-1:0] ms_divider;
@@ -37,9 +39,13 @@ module game_session #(
     reg [3:0] button_pulse;
     reg [3:0] stable_ticks [0:3];
     reg [3:0] settle;
+    reg restart_countdown;
+    reg [1:0] countdown_seconds;
+    reg [9:0] countdown_ms;
     integer button;
     assign running = state == PLAYING;
     assign paused = state == PAUSED;
+    assign countdown = state == COUNTDOWN ? countdown_seconds : 2'd0;
     assign finished = state == FINISHED;
     assign failed = state == FAILED;
     assign home = state == HOME || state == HOME_STOP;
@@ -76,6 +82,9 @@ module game_session #(
             state <= HOME_STOP;
             song_index <= 0;
             settle <= 0;
+            restart_countdown <= 0;
+            countdown_seconds <= 0;
+            countdown_ms <= 0;
             elapsed_ms <= 0;
             ms_divider <= 0;
             cmd_load <= 0; cmd_play <= 0; cmd_stop <= 0;
@@ -91,6 +100,7 @@ module game_session #(
                 end
                 HOME: begin
                     if (|song_press) begin
+                        restart_countdown <= 0;
                         if (song_press[0]) song_index <= 0;
                         else if (song_press[1]) song_index <= 1;
                         else song_index <= 2;
@@ -113,10 +123,27 @@ module game_session #(
                 LOAD_WAIT: begin
                     if (settle < 8) settle <= settle + 1'b1;
                     else if (audio_error) state <= FAILED;
-                    else if (audio_ready && !audio_busy) state <= PLAYING;
+                    else if (audio_ready && !audio_busy) begin
+                        if (restart_countdown) begin
+                            countdown_seconds <= 3;
+                            countdown_ms <= 0;
+                            ms_divider <= 0;
+                            state <= COUNTDOWN;
+                        end else state <= PLAYING;
+                    end
+                end
+                COUNTDOWN: begin
+                    if (ms_divider == CYCLES_PER_MS-1) begin
+                        ms_divider <= 0;
+                        if (countdown_ms == 999) begin
+                            countdown_ms <= 0;
+                            if (countdown_seconds == 1) state <= PLAYING;
+                            else countdown_seconds <= countdown_seconds-1'b1;
+                        end else countdown_ms <= countdown_ms+1'b1;
+                    end else ms_divider <= ms_divider+1'b1;
                 end
                 PLAYING: begin
-                    if (button_pulse[1]) begin
+                    if (|button_pulse) begin
                         state <= PAUSED;
                         if (elapsed_ms >= PRE_ROLL_MS) cmd_pause <= 1;
                     end else if (ms_divider == CYCLES_PER_MS-1) begin
@@ -130,13 +157,24 @@ module game_session #(
                         end
                     end else ms_divider <= ms_divider + 1'b1;
                 end
-                PAUSED: if (button_pulse[2]) begin
-                    state <= PLAYING;
-                    if (elapsed_ms >= PRE_ROLL_MS) cmd_resume <= 1;
+                PAUSED: begin
+                    if (song_press[0]) begin
+                        state <= PLAYING;
+                        if (elapsed_ms >= PRE_ROLL_MS) cmd_resume <= 1;
+                    end else if (song_press[1]) begin
+                        restart_countdown <= 1;
+                        state <= STOP_REQUEST;
+                    end else if (song_press[2]) begin
+                        // Consume the menu press before accepting a new song.
+                        state <= HOME_STOP;
+                        game_reset <= 1;
+                        elapsed_ms <= 0;
+                        ms_divider <= 0;
+                    end
                 end
                 default: begin end
             endcase
-            if (audio_error && (state == PLAYING || state == PAUSED)) begin
+            if (audio_error && (state == PLAYING || state == PAUSED || state == COUNTDOWN)) begin
                 cmd_stop <= 1;
                 state <= FAILED;
             end
@@ -149,9 +187,6 @@ module game_session #(
                     elapsed_ms <= 0;
                     ms_divider <= 0;
                 end
-            end else if (running || paused || loading) begin
-                if (button_pulse[3]) begin cmd_stop <= 1; state <= FINISHED; end
-                if (button_pulse[0]) state <= STOP_REQUEST;
             end
         end
     end

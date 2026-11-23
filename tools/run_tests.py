@@ -11,17 +11,19 @@ ROOT = Path(__file__).resolve().parents[1]
 DESIGN_SOURCES = (
     'veribeat.v', 'clock.v', 'vga.v', 'keypad.v', 'game_session.v', 'audio.v',
     'notes.v', 'song_library.v', 'control.v', 'tile_mask.v', 'event_counter.v',
-    'combo_score.v', 'display.v', 'menu_display.v',
+    'combo_score.v', 'display.v', 'menu_display.v', 'song_progress.v',
 )
 # The final two fields describe parameter overrides, keeping song cases visible.
 TESTS = {
     name: (name, f'tests/{name}.v', []) for name in (
-        'clock_tb', 'vga_tb', 'keypad_tb', 'session_tb', 'chart_sizes_tb',
+        'clock_tb', 'vga_tb', 'keypad_tb', 'session_tb', 'pause_menu_tb', 'song_progress_tb', 'chart_sizes_tb',
         'hit_timing_tb', 'stats_counter_tb', 'combo_score_tb', 'game_tb', 'menu_display_tb',
     )
 }
 TESTS['menu_vga_home'] = ('menu_vga_tb', 'tests/menu_vga_tb.v', [])
 TESTS['menu_vga_hud'] = ('menu_vga_tb', 'tests/menu_vga_tb.v', ['-Pmenu_vga_tb.HUD=1'])
+TESTS['menu_vga_pause'] = ('menu_vga_tb', 'tests/menu_vga_tb.v', ['-Pmenu_vga_tb.PAUSE_MENU=1'])
+TESTS['menu_vga_countdown'] = ('menu_vga_tb', 'tests/menu_vga_tb.v', ['-Pmenu_vga_tb.COUNTDOWN=1'])
 for song in range(3):
     TESTS[f'integration_song_{song}'] = (
         'integration_tb', 'tests/integration_tb.v', [f'-Pintegration_tb.SONG_ID={song}'],

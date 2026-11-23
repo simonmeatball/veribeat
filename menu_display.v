@@ -8,12 +8,14 @@ module menu_display (
     input wire clk,
     input wire reset,
     input wire [9:0] x, y,
-    input wire [1:0] screen, // HOME=0, GAME=1, RESULTS=2, LOADING=3
+    input wire [2:0] screen, // See SCREEN_* in game_defs.vh.
     input wire [1:0] song,
     input wire failed,
     input wire [15:0] hit_digits, miss_digits, misclick_digits,
     input wire [23:0] score_digits,
     input wire [15:0] combo_digits, longest_digits,
+    input wire [9:0] progress_pixels, // 0..512 pixels across the four lanes.
+    input wire [1:0] countdown,
     output reg hud_pixel,
     output reg [11:0] color
 );
@@ -38,6 +40,12 @@ module menu_display (
     localparam [4:0] TEXT_SCORE = 5'd17;
     localparam [4:0] TEXT_COMBO = 5'd18;
     localparam [4:0] TEXT_BEST_STREAK = 5'd19;
+    localparam [4:0] TEXT_PAUSED = 5'd20;
+    localparam [4:0] TEXT_CONTINUE = 5'd21;
+    localparam [4:0] TEXT_RESTART = 5'd22;
+    localparam [4:0] TEXT_MAIN_MENU = 5'd23;
+    localparam [4:0] TEXT_PAUSE_KEYS = 5'd24;
+    localparam [4:0] TEXT_GET_READY = 5'd25;
 
     localparam TEXT_HEIGHT = 20;
     localparam CELL_WIDTH = 16;
@@ -86,6 +94,12 @@ module menu_display (
                 TEXT_SCORE: line = "SCORE                           ";
                 TEXT_COMBO: line = "COMBO                           ";
                 TEXT_BEST_STREAK: line = "BEST STREAK                     ";
+                TEXT_PAUSED: line = "PAUSED                          ";
+                TEXT_CONTINUE: line = "1 CONTINUE                      ";
+                TEXT_RESTART: line = "2 RESTART                       ";
+                TEXT_MAIN_MENU: line = "3 MAIN MENU                     ";
+                TEXT_PAUSE_KEYS: line = "PRESS 1 2 3 TO CHOOSE           ";
+                TEXT_GET_READY: line = "GET READY                       ";
                 default: line = {32{" "}};
             endcase
             text_character = line[255-8*column -: 8];
@@ -97,7 +111,7 @@ module menu_display (
 
     reg [4:0] message;
     reg [9:0] text_x, text_y;
-    reg text_enabled, number_enabled, wide_number;
+    reg text_enabled, number_enabled, wide_number, large_number;
     reg [23:0] number;
     reg [11:0] background, ink;
     // Stage 1 captures layout results before the text/numeric lookup.
@@ -130,6 +144,7 @@ module menu_display (
         text_enabled=0;
         number_enabled=0;
         wide_number=0;
+        large_number=0;
         number=0;
         if (x >= `FIELD_LEFT && x < `FIELD_RIGHT && y >= `FIELD_TOP && y < 448) begin
             background=COLOR_PANEL;
@@ -177,7 +192,45 @@ module menu_display (
                 end
                 text_enabled=1;
             end
+            `SCREEN_PAUSED: begin
+                if (x>=112 && x<528 && ((y>=160 && y<208) ||
+                    (y>=240 && y<288) || (y>=320 && y<368))) begin
+                    background=COLOR_CARD;
+                    if (x==112 || x==527) background=COLOR_ACCENT;
+                end
+                if (y>=64 && y<84) begin
+                    message=TEXT_PAUSED; text_x=272; text_y=64; ink=COLOR_ACCENT;
+                end else if (y>=112 && y<132) begin
+                    message=TEXT_SONG0_TITLE+song;
+                    text_x=song==0 ? 208 : song==1 ? 288 : 248;
+                    text_y=112;
+                end else if (y>=176 && y<196) begin
+                    message=TEXT_CONTINUE; text_x=160; text_y=176;
+                end else if (y>=256 && y<276) begin
+                    message=TEXT_RESTART; text_x=160; text_y=256;
+                end else if (y>=336 && y<356) begin
+                    message=TEXT_MAIN_MENU; text_x=160; text_y=336;
+                end else if (y>=416 && y<436) begin
+                    message=TEXT_PAUSE_KEYS; text_x=160; text_y=416; ink=COLOR_PURPLE;
+                end
+                text_enabled=1;
+            end
+            `SCREEN_COUNTDOWN: begin
+                if (y>=144 && y<164) begin
+                    message=TEXT_GET_READY; text_x=248; text_y=144; ink=COLOR_ACCENT;
+                end else if (y>=224 && y<264) begin
+                    number={22'b0,countdown}; number_enabled=1; large_number=1;
+                    text_x=308; text_y=224; ink=COLOR_ACCENT;
+                end
+                text_enabled=1;
+            end
             `SCREEN_GAME: begin
+                // Thin cyan progress track above the score and combo text.
+                if (x>=62 && x<578 && y>=3 && y<11) begin
+                    background=COLOR_PURPLE;
+                    if (x>=64 && x<576 && y>=5 && y<9)
+                        background=(x-10'd64 < progress_pixels) ? COLOR_ACCENT : COLOR_CARD;
+                end
                 if(y>=15 && y<35) begin
                     text_y=15;
                     text_enabled=1;
@@ -316,13 +369,15 @@ module menu_display (
             // Decode screen regions and local coordinates in their own stage.
             layout_message <= message;
             layout_text_column <= dx[8:4];
-            layout_digit_index <= wide_number ? 3'd5-dx[6:4] : 3'd3-{1'b0,dx[5:4]};
+            layout_digit_index <= large_number ? 3'd0 :
+                wide_number ? 3'd5-dx[6:4] : 3'd3-{1'b0,dx[5:4]};
             layout_number <= number;
             layout_numeric <= number_enabled;
             layout_text_visible <= text_enabled && x>=text_x &&
-                dx<32*CELL_WIDTH && dy<TEXT_HEIGHT && dx[3:2]<3;
-            layout_column <= dx[3:2];
-            layout_row <= dy[4:2];
+                (large_number ? (dx<24 && dy<40) :
+                (dx<32*CELL_WIDTH && dy<TEXT_HEIGHT && dx[3:2]<3));
+            layout_column <= large_number ? dx[4:3] : dx[3:2];
+            layout_row <= large_number ? dy[5:3] : dy[4:2];
             layout_background <= background;
             layout_ink <= ink;
             layout_hud <= screen==`SCREEN_GAME && y<`FIELD_TOP;

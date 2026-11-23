@@ -137,7 +137,7 @@ keypad.v         notes.v        control.v
 tile_mask.v      display.v      event_counter.v
 combo_score.v
 game_session.v   audio.v        song_library.v
-menu_display.v
+menu_display.v   song_progress.v
 ```
 
 Add `song_library_config.vh`, `game_defs.vh`, and `font3x5.vh` as Verilog
@@ -181,11 +181,17 @@ on-board calibration using `audio_offset_ms`.
 
 | Board button | Action |
 | --- | --- |
-| Center | Reset to home |
-| Up | Stop, reload, and restart the chart |
-| Left | Pause chart time and audio |
-| Right | Resume |
-| Down | Stop and show results |
+| Center | Reset the entire program and return home |
+| Up, Left, Right, Down | Pause chart time/audio and open the pause menu |
+
+The pause menu accepts keypad `1` to continue, `2` to restart the current
+song, or `3` to return to the home screen. Continue preserves the score,
+combo, and playback position. Restart clears the run, reloads the same song,
+and displays a three-second **3–2–1** countdown before gameplay and its
+normal visual lead-in.
+Returning home stops audio and clears the run. A fresh key press is needed
+to select another song. Outer board buttons leave an already-paused game
+paused. Use the keypad choices to continue, restart, or return home.
 
 LEDs 0–10 show the binary hit count. LEDs 11–15 show running, paused, finished,
 audio failure, and renderer deadline failure respectively. An audio failure
@@ -202,6 +208,11 @@ five reserved padding bits before sending the 35-bit valid/time/lane word
 to gameplay. `game_session.v` controls home, loading, play, pause, and results.
 `menu_display.v` draws the home/loading/results screens with three 100 MHz
 pipeline stages that settle within the existing four-cycle pixel interval.
+During gameplay, a cyan bar above the score shows playback progress across
+the selected song. It excludes the 1,400 ms lead-in, freezes while paused,
+and fills completely at the song's duration. `song_progress.v` computes a
+512-pixel width once per frame using nine sequential division steps,
+keeping that arithmetic outside the VGA pixel path.
 `event_counter.v` instances count hits, individual missed notes, and misclick events.
 `combo_score.v` tracks the current/longest streak and awards combo multipliers.
 Its decimal score accumulator works in hundreds, avoiding division or a

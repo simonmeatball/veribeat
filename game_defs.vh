@@ -1,10 +1,12 @@
 `ifndef VERIBEAT_GAME_DEFS
 `define VERIBEAT_GAME_DEFS
 
-`define SCREEN_HOME 2'd0
-`define SCREEN_GAME 2'd1
-`define SCREEN_RESULTS 2'd2
-`define SCREEN_LOADING 2'd3
+`define SCREEN_HOME 3'd0
+`define SCREEN_GAME 3'd1
+`define SCREEN_RESULTS 3'd2
+`define SCREEN_LOADING 3'd3
+`define SCREEN_PAUSED 3'd4
+`define SCREEN_COUNTDOWN 3'd5
 
 `define FIELD_LEFT 64
 `define FIELD_RIGHT 576
