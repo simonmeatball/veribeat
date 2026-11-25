@@ -16,10 +16,10 @@ is missing, a test track is generated instead: a beep on every beat at 120 BPM
 (pitch depends on N), which is handy for checking audio/visual sync.
 
 Usage:
-    python3 audio_player.py                 # auto-detect the Basys 3 port
-    python3 audio_player.py --list          # list serial ports
-    python3 audio_player.py --port /dev/cu.usbserial-XXXXXXXX1
-    python3 audio_player.py --keyboard      # no FPGA: type commands (e.g. L3, P, S)
+    python3 audio/audio_player.py                 # auto-detect the Basys 3 port
+    python3 audio/audio_player.py --list          # list serial ports
+    python3 audio/audio_player.py --port /dev/cu.usbserial-XXXXXXXX1
+    python3 audio/audio_player.py --keyboard      # no FPGA: type commands (e.g. L3, P, S)
 
 Requirements:
     pip3 install pyserial            (required)

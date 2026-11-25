@@ -1,129 +1,330 @@
 # veribeat
 
-## VGA bring-up (Basys 3)
+## Veribeat game (Basys 3)
 
-The diagnostic displays eight vertical color bars, a stationary 64-pixel grid,
-a one-pixel white border, and a bouncing 64x64 white square. The square moves
-2 pixels horizontally and 1 pixel vertically per frame; the background stays fixed. The center button resets the display; releasing it restarts the raster.
+The home screen offers all three songs in one FPGA build. Press keypad `1`
+for Yoru ni Kakeru (song 0), `2` for APT. (song 1), or `3` for Sunflower
+(song 2). The selected song loads through the laptop audio player before
+play starts. During play, the HUD shows the score and current combo. At the
+end, the results screen shows a letter grade, score, hits, missed notes, misclicks, and the
+longest streak. Press any keypad key or board button to return home, then make
+a fresh song selection.
 
-- `clock.v`: exposes real `CLK_100MHz`, `CLK_50MHz`, and `CLK_25MHz` outputs,
-  synchronizes reset release, and produces the 25 MHz `pixel_tick` enable.
-  Simple counters toggle the outputs, following the lab clock-module style.
-- `vga.v`: 640x480 timing, active-low sync, visible-area flag, frame enable,
-  coordinates, and registered 4-bit-per-channel RGB blanking.
-- `veribeat.v`: top module connecting the clock, timing, and test pattern.
-- `basys3.xdc`: oscillator, center-button, and VGA pin constraints.
+A hit is a successfully judged note. A miss is a note that passes its late
+window. A misclick is a gameplay press without a matching note, including
+keys outside the four gameplay lanes. Multiple missed notes count
+individually even when they expire in the same frame. Menu selection,
+loading, pause, and results navigation produce no gameplay penalties.
+Misclick statistics saturate at the four-digit display limit of 9999.
 
-All sequential logic uses `posedge clk` at 100 MHz. `pixel_tick` is a clock
-enable, not a separate clock. This avoids routing a logic divider as a clock.
-The effective pixel rate is 25 MHz, matching the simple VGA example in the
-[Digilent Basys 3 reference manual](https://digilent.com/reference/_media/basys3%3Abasys3_rm.pdf).
-The named clocks are 50% duty-cycle waveforms, distinct from `pixel_tick`.
-Divided clocks stop low during reset (after the next input edge), then restart.
-`CLK_50MHz` toggles every input cycle; `CLK_25MHz` toggles every two input cycles.
-To add an output, declare a counter and an output register, initialize/reset
-both to zero, and toggle the output whenever the counter reaches `N - 1`.
-The resulting frequency is `100,000,000 / (2 * N)` Hz. Give the counter enough
-bits to hold `N - 1`.
+The game accepts up to 1,024 tap notes from a text chart. Press the matching
+bottom-row keypad key when the center of a cyan tile reaches the center of
+its bottom pad, aligned with the purple timing line. The hit window is
+±160 ms. A hit flashes white and advances the combo by one note. A missed
+note or unmatched press flashes red and resets the combo to zero.
 
-The current top keeps all logic on 100 MHz with enables. If future logic uses
-a divided output as its actual clock, add appropriate clock buffering, a
-generated-clock constraint, and reset synchronization for that domain.
-Non-integer division ratios require an MMCM/Clocking Wizard.
+Each hit earns timing-weighted base points: **Perfect 100, Great 80, Good 60**.
+The current combo multiplies that award. The threshold note uses the new
+multiplier, so the tenth consecutive Perfect earns 200 points.
 
-This produces 31.25 kHz horizontal sync and approximately 59.52 Hz refresh.
-The standard nominal VGA pixel clock is 25.175 MHz; if the particular monitor
-does not lock to 25 MHz, use a Clocking Wizard/MMCM for 25.175 or 25.2 MHz,
-run the VGA controller on that clock, and tie its `pixel_tick` high.
-Synchronize reset release to that new clock and hold reset until the MMCM locks.
-
-| Timing interval | Horizontal (pixels) | Vertical (lines) |
+| Current combo after the hit | Multiplier | Perfect / Great / Good points |
 | --- | ---: | ---: |
-| Visible | 640 | 480 |
-| Front porch | 16 | 10 |
-| Sync pulse (low) | 96 | 2 |
-| Back porch | 48 | 33 |
-| Total | 800 | 525 |
+| 1–9 | 1× | 100 / 80 / 60 |
+| 10–19 | 2× | 200 / 160 / 120 |
+| 20–29 | 3× | 300 / 240 / 180 |
+| 30 and above | 4× | 400 / 320 / 240 |
 
-The supplied Dell part number appears to identify a 1907FP-series monitor;
-confirm the model on its label. The
-[Dell 1907FP manual](https://downloads.dell.com/manuals/all-products/esuprt_electronics/esuprt_display/dell-1907fp_user%27s%20guide_en-us.pdf)
-lists 640x480 at 60 Hz as a supported mode (25.2 MHz rounded pixel clock).
-Hardware compatibility with this specific unit still needs a board test.
-Pin assignments follow
-[Digilent's master constraints](https://github.com/Digilent/digilent-xdc/blob/master/Basys-3-Master.xdc).
+Each note in a chord retains its timing quality, advances the streak, and
+receives its own multiplier in lane order.
+Misses and misclicks reset the current combo while the longest streak is
+retained for the results screen. Simultaneous successes and an error award
+timing-weighted base points and reset the combo. Restarting or returning home clears the
+run's score and streak records. A perfect 1,024-note run earns 403900 points;
+the six-digit score display and four-digit streak display cover this range.
 
-### Program the board
+Each press consumes the oldest eligible note in its lane. When two windows
+overlap, the later note stays available for another press. The judge stores
+the press timestamp so waiting for the next VGA frame does not shorten the
+late window. Holding a key produces one press. Expired notes are resolved
+after the selected hits.
 
-1. Create a Vivado RTL project for Basys 3 (`xc7a35tcpg236-1`).
-2. Add `clock.v`, `vga.v`, and `veribeat.v` as design sources and select
-   `veribeat` as the top module. Add `basys3.xdc` as constraints.
-3. Run synthesis, implementation, and bitstream generation; check timing.
-4. Connect the board's VGA port to the Dell's VGA input and select Analog/VGA
-   on the monitor. Program the Basys 3 through Vivado Hardware Manager.
-5. Expect white, yellow, cyan, green, magenta, red, blue, and black bars from
-   left to right with a fixed grid and white border. A white square should move
-   diagonally and bounce inside the border. Hold the center button to blank
-   the display; release it to restart the pattern.
+Each lane briefly displays a timing judgment above its input pad:
 
-### Connect the game renderer
+| Judgment | Distance from the note's target time |
+| --- | --- |
+| PERFECT | Within ±40 ms |
+| GREAT | More than 40 ms, up to ±90 ms |
+| GOOD | More than 90 ms, up to ±160 ms |
+| MISS | Note passed its late window without a hit |
+| BAD | Lane press without an eligible note |
 
-Replace the combinational diagnostic-pattern logic in `veribeat.v` with the renderer in
-`display.v`. Compute RGB from the **current** `x` and `y`; valid visible
-coordinates are `x=0..639`, `y=0..479` when `video_on` is high. Coordinates
-continue through the blanking intervals (`x=0..799`, `y=0..524`), and `vga.v`
-registers RGB and both sync outputs together once per pixel. The connector
-outputs have one pixel of latency relative to `x`/`y`; blanking and sync receive
-that same delay, preserving alignment. Outputs hold between pixel updates,
-preventing combinational decode glitches from reaching the connector.
-A registered renderer or
-synchronous ROM needs corresponding timing/coordinate pipeline alignment.
+Labels last 30 video frames (about half a second), replacing the previous
+label in that lane. Chords retain separate judgments. Classification uses
+the captured press time, including buffered presses processed next frame.
+All three successful judgments count as hits and advance the combo.
+The white hit and red failure outlines remain alongside the text.
 
-`frame_tick` is high for one 100 MHz cycle immediately before the raster wraps
-from `(799,524)` to `(0,0)`. Use `if (frame_tick)` inside a `posedge clk` block
-to update game state once per frame. Game state should remain stable during
-the visible frame to avoid tearing.
+The result grade uses **100 × max(0, hits − factor × (misses + misclicks)) /
+total chart notes**, with **S ≥95%, A ≥90%, B ≥80%, C ≥70%, D ≥60%, F <60%**.
+The default factor is **0.25**: four errors subtract one hit's worth of grade
+credit. Set the nonnegative `GRADE_PENALTY_PERCENT` parameter on `veribeat`
+to change this factor (25 = 0.25, 50 = 0.5, 100 = 1). Timing weights and
+combo bonuses affect numeric score; each successful hit contributes one
+hit to the grade. Empty charts receive F and audio-error screens omit the
+grade. The photographed 808-hit/46-miss/45-misclick run earns about **91.95%,
+an A** with the default factor. `result_grade.v` pipelines exact integer
+threshold comparisons outside the VGA pixel path. Judgment text uses the
+existing three-stage menu pipeline and overlays only lit glyph pixels,
+leaving the tiles visible between letters.
 
-### Simulation
+The supplied [song_0 chart](charts/song_0.txt) contains 854 notes matched to
+spectral attacks in `audio/songs/song_0.mp3`, YOASOBI's Yoru ni Kakeru. Analysis
+of this exact file found a tempo near 130 BPM and 262.177 seconds of decoded
+audio. The chart follows beats, stronger eighth notes, and syncopated accents,
+with 32 two-key chords. Same-key presses are separated by at least 220 ms.
+Its current hardware calibration offset is zero. The arrangement is generated
+from audio analysis and still benefits from a listening/playtesting pass.
 
-The testbench uses Verilog-2005. With Icarus Verilog installed, run from this directory:
+The [analysis record](charts/song_0.analysis.json) stores the source MP3's
+SHA-256 hash, timing statistics, and each selected attack. To regenerate the
+arrangement, install the optional authoring dependencies `librosa`, `numpy`,
+`scipy`, `soundfile`, and `imageio-ffmpeg`, then run the following command from
+the repository root. This regenerates the TXT and its song-specific ROM.
+Run `compile_songs.py` afterward to refresh the shared menu metadata.
 
 ```sh
-iverilog -g2005 -Wall -s vga_tb -o /tmp/veribeat-vga-test clock.v vga.v veribeat.v tests/vga_tb.v
-vvp -N /tmp/veribeat-vga-test
-iverilog -g2005 -Wall -s clock_tb -o /tmp/veribeat-clock-test clock.v tests/clock_tb.v
-vvp -N /tmp/veribeat-clock-test
+python3 tools/match_song_chart.py audio/songs/song_0.mp3
 ```
 
-`vvp -N` makes a failing testbench `$stop` exit with a nonzero status.
+### Additional track charts
 
-The testbench checks startup, reset assertion/release, enable spacing,
-coordinate progression, complete frame lengths, sync intervals, visible pixel
-counts, named-clock waveforms, registered RGB/sync alignment, animation,
-bounces, and RGB blanking over three complete frames including a
-reset during an additional partial frame. The test starts the square near the
-bottom-right corner to exercise both bounces without simulating hundreds of frames. Add `tests/vga_tb.v` as a simulation
-source only if running the test in Vivado, selecting `vga_tb` as simulation top.
-The separate `clock_tb` tests the 25/50/100 MHz outputs, pixel enable, and reset;
-select it as simulation top to run that test.
+Both additional charts were analyzed from the corresponding MP3 files in
+`audio/songs/`. Their analysis records include the exact source hashes.
 
-Validated with Icarus Verilog 13.0: PASS across three complete frames and
-5,052,352 system-clock cycles (counter-based clock implementation). The design sources and testbench compile in Verilog-2005
-mode without warnings. Vivado synthesis, timing closure, and physical monitor
-operation have not yet been verified.
+| Song ID | Track | Notes | Approximate BPM | Accent chords |
+| --- | --- | ---: | ---: | ---: |
+| 1 | [APT.](charts/song_1.txt) — ROSÉ & Bruno Mars | 540 | 149 | 12 |
+| 2 | [Sunflower](charts/song_2.txt) — Post Malone & Swae Lee | 419 | 90 | 9 |
 
-### Checking jitter on the monitor
+Each chart has its own `.mem` and `.analysis.json` alongside
+the TXT. Compile all three charts together after editing their TXT files.
 
-Rebuild and program the new bitstream. The fixed grid/border should stay still
-while the square moves in uniform frame-sized steps. A split/discontinuity in
-its edge suggests tearing; shimmer on stationary edges points toward signal or
-monitor sampling issues. This visual test cannot measure electrical clock jitter.
+```sh
+python3 tools/compile_songs.py
+```
 
-First reseat both VGA connectors and tighten their screws; try another direct
-VGA cable if available. Run the Dell's Auto Adjust, then adjust Image Settings >
-Pixel Clock and Phase if necessary. Dell's manual specifically recommends these
-controls for shaky/jittery video. The registered outputs remove a possible
-logic-side source of glitches; they do not establish the cause of the observed
-hardware symptom. The pixel rate remains 25 MHz (59.52 Hz frames). If jitter
-persists after cable/monitor checks and Vivado timing passes, try a standards-
-aligned 25.175/25.2 MHz MMCM pixel clock as the next controlled comparison.
+This refreshes the menu's three ROM banks and shared metadata. The keypad
+selection controls both the chart bank and the song ID sent to the laptop.
+These are automatically arranged rhythm charts and need listening/playtesting
+and hardware latency calibration.
+
+To regenerate an individual arrangement into its own chart files, specify
+its song ID and output paths. For example, use the following for APT.
+
+```sh
+python3 tools/match_song_chart.py audio/songs/song_1.mp3 \
+  --song-id 1 --title 'ROSÉ & Bruno Mars - APT.' --chart charts/song_1.txt \
+  --memory charts/song_1.mem
+```
+
+### Edit and compile charts
+
+```text
+# target_ms lane, measured from audio playback start
+song_id 0
+duration_ms 262177
+audio_offset_ms 0
+1500 0
+2000 1
+2500 1
+2500 2
+```
+
+Lane 0 is the leftmost lane. Equal times on different lanes form chords.
+Keep times sorted. Positive `audio_offset_ms` moves notes later relative to
+the FPGA's playback command. The compiler checks capacity, lane numbers,
+duplicates, metadata, and adjusted note times.
+
+Run from the repository root after editing a chart.
+
+```sh
+python3 tools/compile_songs.py
+```
+
+This generates `charts/song_0.mem` through `charts/song_2.mem` and
+`song_library_config.vh`. Each ROM contains 1,024
+padded 40-bit words. The shared header holds each song's note count and
+duration. Rebuild and program the FPGA after changing chart data. The
+standalone `compile_chart.py` tool is also available for single-chart tests.
+
+### Vivado project setup
+
+Create an RTL project for Basys 3 part `xc7a35tcpg236-1`. Add these design
+sources and set `veribeat` as the synthesis top.
+
+```text
+clock.v          vga.v          veribeat.v
+keypad.v         notes.v        control.v
+tile_mask.v      display.v      event_counter.v
+combo_score.v   result_grade.v
+game_session.v   audio.v        song_library.v
+menu_display.v   song_progress.v
+```
+
+Add `song_library_config.vh`, `game_defs.vh`, and `font3x5.vh` as Verilog
+headers and their directory to the project's Verilog include directories. Add all three `charts/song_N.mem`
+files as Memory Initialization Files. The `SONG0_FILE`, `SONG1_FILE`, and
+`SONG2_FILE` top-level parameters specify their paths. For simulation, run
+from the repository root. If Vivado cannot resolve a memory path, set the
+corresponding parameter to its absolute path. Verify that synthesis reads
+all three ROMs successfully.
+
+Use `basys3.xdc` as the constraint file for the game. It covers the clock,
+JXADC keypad, VGA, UART, board buttons, and status LEDs.
+
+If the Vivado project copied sources, update the active project copies.
+Reset synthesis and implementation after updating the RTL. Check post-route
+setup/hold timing and inferred ROM/RAM resources before generating a bitstream.
+Testbench files belong under Simulation Sources.
+
+### Keypad and audio controls
+
+Connect the PmodKYPD to JXADC (JX). The scanner sends synchronized, debounced pulses.
+The controller buffers pulses even while scanning the chart.
+
+| Lane, left to right | 1 | 2 | 3 | 4 |
+| --- | --- | --- | --- | --- |
+| Key | `0` | `F` | `E` | `D` |
+
+Start the laptop player before resetting the FPGA.
+
+```sh
+python3 audio/audio_player.py
+```
+
+It uses the existing USB-UART protocol at 115200 baud to play the selected
+`audio/songs/song_N.mp3`. Reset opens the home screen. Selecting a song
+stops previous playback, loads its song ID, waits for the player's ready
+response, and runs
+a 1.4-second visual pre-roll before sending PLAY. The song clock uses the
+100 MHz oscillator to count milliseconds. Audio startup latency needs
+on-board calibration using `audio_offset_ms`.
+
+| Board button | Action |
+| --- | --- |
+| Center | Reset the entire program and return home |
+| Up, Left, Right, Down | Pause chart time/audio and open the pause menu |
+
+The pause menu accepts keypad `1` to continue, `2` to restart the current
+song, or `3` to return to the home screen. Continue displays a three-second
+**3–2–1** countdown, preserving the score, combo, playback position, and
+partial millisecond before resuming gameplay and audio. Restart clears the
+run, reloads the same song, and shows the same countdown before gameplay
+and its normal visual lead-in. Continuing during the visual lead-in keeps
+audio unstarted until the remaining lead-in completes.
+Returning home stops audio and clears the run. A fresh key press is needed
+to select another song. Outer board buttons leave an already-paused game
+paused. Use the keypad choices to continue, restart, or return home.
+
+LEDs 0–10 show the binary hit count. LEDs 11–15 show running, paused, finished,
+audio failure, and renderer deadline failure respectively. An audio failure
+shows an error/results screen. Return home and select a song after correcting
+the player or song file. Any button on the results screen returns home. The game ends
+when the configured track duration has elapsed, all notes have resolved,
+and the feedback tail has elapsed.
+
+### Architecture and simulation
+
+`song_library.v` selects one of three synchronous `notes.v` ROMs and its
+metadata. Memory files retain their 40-bit format. `notes.v` removes the
+five reserved padding bits before sending the 35-bit valid/time/lane word
+to gameplay. `game_session.v` controls home, loading, play, pause, and results.
+`menu_display.v` draws the home/loading/results screens with three 100 MHz
+pipeline stages that settle within the existing four-cycle pixel interval.
+During gameplay, a cyan bar above the score shows playback progress across
+the selected song. It excludes the 1,400 ms lead-in, freezes while paused,
+and fills completely at the song's duration. `song_progress.v` computes a
+512-pixel width once per frame using nine sequential division steps,
+keeping that arithmetic outside the VGA pixel path.
+`event_counter.v` instances count hits, individual missed notes, and misclick events.
+`combo_score.v` tracks the current/longest streak and awards timing-weighted
+points with combo multipliers. It snapshots each frame's hit qualities with
+the hit pulse, accumulates binary points, and converts a score snapshot to
+six decimal digits over twenty clocks. Binary score and digits publish
+together, keeping decimal carry/division out of the VGA pixel path.
+`control.v` scans the selected chart twice per
+frame to judge notes and paint the next tile mask. `tile_mask.v` stores two
+banks of four lane masks. A complete bank is published at VGA line 47,
+before the playfield starts at line 48. An incomplete frame sets LED 15
+and preserves the previous bank. The renderer uses distributed-memory row
+reads, keeping the VGA timing interface's existing RGB/sync alignment.
+
+Install Icarus Verilog, then run the maintained suite from the repository
+root. `tools/run_tests.py` lists the design sources and test cases.
+
+```sh
+python3 tools/run_tests.py
+```
+
+Run selected tests during development by naming them.
+
+```sh
+python3 tools/run_tests.py combo_score_tb menu_display_tb
+python3 tools/run_tests.py integration_song_1
+```
+
+Use `--simulator-dir /path/to/bin` when Icarus is installed outside PATH.
+The runner also executes the Python chart-compiler checks. The full suite
+covers direct clock/VGA timing, the keypad and session, 1,024-note gameplay,
+hit-window and judgment boundaries, statistics, combo scoring, grade tiers,
+screen pixels, HUD alignment,
+and the full flow for every song.
+
+The integration simulation checks physical matrix song selection, UART
+STOP/LOAD/ready, gameplay presses, score/combo changes, all three counters,
+longest streak, results, and returning home while holding the return key.
+It advances song time for the test. The runner exercises all three song
+selections. The session simulation checks all menu selections, countdown, pause/resume,
+finish, navigation, and error handling. Physical audio alignment and Vivado
+timing closure require board/tool verification.
+
+## VGA timing
+
+All sequential logic uses the 100 MHz system clock. `clock.v` synchronizes
+both reset edges through two flip-flops and emits `pixel_tick` once every
+four cycles, giving a 25 MHz pixel rate. `vga.v` generates a 640×480 raster
+with totals of 800×525 pixels,
+approximately 59.52 frames per second. RGB, sync, and blanking are registered
+on the same pixel enable. Reset assertion and release reach the game after
+two clock samples. The reset synchronizer and VGA output registers use
+clock-only sequential blocks so inferred RAM control paths have timed reset
+behavior.
+
+`frame_tick` marks the end of the raster. The gameplay controller prepares
+the next tile mask between that boundary and the playfield at line 48.
+The menu's three register stages settle inside each four-cycle pixel interval.
+The menu registers layout/coordinates, then character lookup, then glyph
+color and HUD selection. Keep these timing relationships when changing rendering logic. The direct
+`vga_tb`, `clock_tb`, and menu VGA tests cover alignment and reset behavior.
+
+Check Vivado post-route setup/hold timing and board operation after RTL
+changes. If the monitor requires standards-aligned VGA timing, the existing
+25 MHz pixel enable will need a separately verified clocking change.
+
+## Source cleanup
+
+The playable top is `veribeat`. Keypad scanning lives in `keypad.v`, and the
+generic decimal event accumulator lives in `event_counter.v`. `combo_score.v`
+owns the point rules and streak state. `game_defs.vh` holds shared geometry
+and screen identifiers; `font3x5.vh` holds the common static glyph table.
+
+The laptop entry point is `audio/audio_player.py`. Editable charts, compiled
+ROMs, and source-analysis records live under `charts/`. The tests exercise
+hardware interfaces directly and the normal playable top. The cleanup plan
+and verification record are in [plans/code-cleanup.md](plans/code-cleanup.md).
+
+For an existing Vivado project, replace the `input.v` and `score.v` source
+entries with `keypad.v` and `event_counter.v`, remove the legacy audio-test
+source, and refresh the changed RTL copies. Add `game_defs.vh` and
+`font3x5.vh` alongside the existing shared song header. Rebuild synthesis and
+implementation using `veribeat` as the top.

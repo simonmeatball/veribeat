@@ -1,0 +1,27 @@
+`ifndef VERIBEAT_GAME_DEFS
+`define VERIBEAT_GAME_DEFS
+
+`define SCREEN_HOME 3'd0
+`define SCREEN_GAME 3'd1
+`define SCREEN_RESULTS 3'd2
+`define SCREEN_LOADING 3'd3
+`define SCREEN_PAUSED 3'd4
+`define SCREEN_COUNTDOWN 3'd5
+
+`define JUDGMENT_NONE 3'd0
+`define JUDGMENT_PERFECT 3'd1
+`define JUDGMENT_GREAT 3'd2
+`define JUDGMENT_GOOD 3'd3
+`define JUDGMENT_MISS 3'd4
+`define JUDGMENT_BAD 3'd5
+
+`define FIELD_LEFT 64
+`define FIELD_RIGHT 576
+`define FIELD_TOP 48
+`define FIELD_BOTTOM 470
+`define PAD_TOP 410
+`define PAD_BOTTOM 456
+`define PAD_CENTER_Y 433
+`define TILE_HEIGHT 36
+
+`endif

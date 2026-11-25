@@ -2,7 +2,7 @@
 // =============================================================================
 // audio.v - UART audio-control interface for veribeat
 //
-// The FPGA tells a Python program on the laptop (audio_player.py) when to
+// The FPGA tells a Python program on the laptop (audio/audio_player.py) when to
 // load / play / stop / pause / resume a song, over the Basys 3 USB-UART.
 //
 // UART format: 8N1 (1 start bit, 8 data bits LSB first, 1 stop bit), idle high.

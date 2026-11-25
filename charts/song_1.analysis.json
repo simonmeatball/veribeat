@@ -1,0 +1,2671 @@
+{
+  "source_audio": "audio/songs/song_1.mp3",
+  "sha256": "56a76c9219de3426f75b7c8aa6c175e0f8e8cf7042dc25121324cd06ec023d74",
+  "method": "decoded MP3 spectral attacks, full-track tempo/phase fit, adaptive eighth notes and syncopations",
+  "sample_rate": 22050,
+  "hop_samples": 256,
+  "decoded_duration_ms": 173424.036,
+  "estimated_bpm": 148.991625,
+  "eighth_grid_phase_ms": 158.437,
+  "sixteenth_phase_coherence": 0.780541,
+  "notes": 540,
+  "distinct_attack_times": 528,
+  "accent_chords": 12,
+  "first_note_ms": 418,
+  "last_note_ms": 167474,
+  "lane_counts": [
+    133,
+    128,
+    142,
+    137
+  ],
+  "minimum_same_lane_gap_ms": 220,
+  "median_grid_residual_ms": 4.591,
+  "p95_grid_residual_ms": 25.496,
+  "events": [
+    {
+      "time_ms": 418,
+      "strength": 4.579,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 998,
+      "strength": 1.0583,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 1382,
+      "strength": 1.5734,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 1730,
+      "strength": 0.9255,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 2043,
+      "strength": 2.6181,
+      "kind": "syncopation"
+    },
+    {
+      "time_ms": 2218,
+      "strength": 3.3423,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 2786,
+      "strength": 4.3863,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 3193,
+      "strength": 2.0505,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 3390,
+      "strength": 1.6609,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 3611,
+      "strength": 3.7389,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 3831,
+      "strength": 2.4592,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 4389,
+      "strength": 2.7541,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 4574,
+      "strength": 1.2253,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 4934,
+      "strength": 3.1454,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 5201,
+      "strength": 5.1924,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 5991,
+      "strength": 5.9602,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 6641,
+      "strength": 3.2099,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 6803,
+      "strength": 11.7772,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 7001,
+      "strength": 1.5911,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 7198,
+      "strength": 6.7324,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 7407,
+      "strength": 6.993,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 7814,
+      "strength": 7.5939,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 8011,
+      "strength": 6.4265,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 8417,
+      "strength": 8.9367,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 8812,
+      "strength": 6.5719,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 9021,
+      "strength": 5.1977,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 9416,
+      "strength": 6.3566,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 9613,
+      "strength": 5.7797,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 10019,
+      "strength": 7.6048,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 10635,
+      "strength": 5.8024,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 11029,
+      "strength": 7.2547,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 11633,
+      "strength": 9.1496,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 12040,
+      "strength": 6.2383,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 12249,
+      "strength": 5.0937,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 12643,
+      "strength": 7.7621,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 13642,
+      "strength": 6.652,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 13851,
+      "strength": 6.8711,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 14257,
+      "strength": 7.5741,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 14454,
+      "strength": 6.7133,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 14861,
+      "strength": 8.9875,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 15256,
+      "strength": 6.3866,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 15464,
+      "strength": 5.4955,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 15871,
+      "strength": 6.8388,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 16057,
+      "strength": 6.3225,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 16463,
+      "strength": 7.2762,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 17078,
+      "strength": 5.1672,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 17473,
+      "strength": 7.0552,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 18077,
+      "strength": 9.6306,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 18471,
+      "strength": 6.3563,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 18680,
+      "strength": 5.5653,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 19087,
+      "strength": 6.9368,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 20294,
+      "strength": 4.6677,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 20503,
+      "strength": 4.4671,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 20701,
+      "strength": 5.2665,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 20898,
+      "strength": 6.7873,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 21304,
+      "strength": 5.9415,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 21502,
+      "strength": 3.6633,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 21699,
+      "strength": 4.5555,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 21908,
+      "strength": 4.9775,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 22314,
+      "strength": 5.1107,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 22500,
+      "strength": 5.2513,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 22918,
+      "strength": 6.0344,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 23115,
+      "strength": 2.2428,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 23522,
+      "strength": 3.8154,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 23917,
+      "strength": 4.881,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 24335,
+      "strength": 2.1996,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 24520,
+      "strength": 6.6631,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 24718,
+      "strength": 2.3013,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 24927,
+      "strength": 5.2361,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 25124,
+      "strength": 4.8792,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 25530,
+      "strength": 6.926,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 26134,
+      "strength": 5.7521,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 26738,
+      "strength": 3.0269,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 26958,
+      "strength": 4.3653,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 27144,
+      "strength": 4.2709,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 27748,
+      "strength": 5.061,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 27945,
+      "strength": 2.8159,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 28352,
+      "strength": 4.8631,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 28758,
+      "strength": 4.0422,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 28944,
+      "strength": 4.3977,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 29362,
+      "strength": 5.7851,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 29756,
+      "strength": 4.2322,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 29965,
+      "strength": 4.7902,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 30360,
+      "strength": 6.0769,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 30778,
+      "strength": 4.0547,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 30964,
+      "strength": 7.4472,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 31370,
+      "strength": 5.3704,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 31579,
+      "strength": 4.2752,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 31765,
+      "strength": 5.0151,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 31974,
+      "strength": 6.5054,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 33181,
+      "strength": 3.9642,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 33588,
+      "strength": 2.7212,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 33785,
+      "strength": 4.0721,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 33982,
+      "strength": 2.552,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 34191,
+      "strength": 3.4356,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 34389,
+      "strength": 2.0624,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 34795,
+      "strength": 3.2755,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 35004,
+      "strength": 3.6455,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 35201,
+      "strength": 2.8392,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 35387,
+      "strength": 3.6934,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 35608,
+      "strength": 1.8318,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 35782,
+      "strength": 3.3698,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 36409,
+      "strength": 2.8878,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 36815,
+      "strength": 2.4532,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 37001,
+      "strength": 3.5942,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 37198,
+      "strength": 1.895,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 37407,
+      "strength": 3.3472,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 37802,
+      "strength": 3.9536,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 38011,
+      "strength": 3.2455,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 38220,
+      "strength": 3.6059,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 38371,
+      "strength": 1.9078,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 38615,
+      "strength": 3.4995,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 39021,
+      "strength": 3.3165,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 39625,
+      "strength": 3.4861,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 40031,
+      "strength": 2.4262,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 40217,
+      "strength": 4.8083,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 40438,
+      "strength": 1.6814,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 40635,
+      "strength": 3.2029,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 41030,
+      "strength": 4.3147,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 41239,
+      "strength": 3.4199,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 41645,
+      "strength": 2.9921,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 41842,
+      "strength": 3.113,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 42051,
+      "strength": 1.6407,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 42237,
+      "strength": 4.131,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 42852,
+      "strength": 2.6398,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 43061,
+      "strength": 3.1215,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 43259,
+      "strength": 2.0229,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 43445,
+      "strength": 3.1156,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 43665,
+      "strength": 1.7616,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 44280,
+      "strength": 3.3789,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 44466,
+      "strength": 2.2884,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 44896,
+      "strength": 2.2766,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 45058,
+      "strength": 6.432,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 45314,
+      "strength": 1.8923,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 45465,
+      "strength": 9.9128,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 45859,
+      "strength": 4.1763,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 46068,
+      "strength": 5.7476,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 46475,
+      "strength": 6.4752,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 46660,
+      "strength": 6.2166,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 47067,
+      "strength": 7.5936,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 47473,
+      "strength": 6.448,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 47682,
+      "strength": 5.2768,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 48077,
+      "strength": 4.9285,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 48681,
+      "strength": 6.2351,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 49284,
+      "strength": 5.7233,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 49691,
+      "strength": 7.423,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 49888,
+      "strength": 5.7481,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 50294,
+      "strength": 9.3193,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 50689,
+      "strength": 6.482,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 50898,
+      "strength": 4.9824,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 51304,
+      "strength": 6.9679,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 51908,
+      "strength": 5.6477,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 52303,
+      "strength": 5.7722,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 52512,
+      "strength": 6.7715,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 52918,
+      "strength": 6.6188,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 53104,
+      "strength": 7.0058,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 53510,
+      "strength": 8.4146,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 53917,
+      "strength": 6.3873,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 54126,
+      "strength": 5.3669,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 54520,
+      "strength": 5.2559,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 55124,
+      "strength": 6.52,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 55728,
+      "strength": 5.5582,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 56134,
+      "strength": 7.4735,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 56332,
+      "strength": 5.5352,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 56738,
+      "strength": 9.2829,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 57133,
+      "strength": 6.6164,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 57342,
+      "strength": 5.8398,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 57748,
+      "strength": 6.7345,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 58352,
+      "strength": 6.2584,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 58967,
+      "strength": 2.9961,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 59153,
+      "strength": 6.2701,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 59350,
+      "strength": 7.296,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 59559,
+      "strength": 6.2065,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 59780,
+      "strength": 3.474,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 60163,
+      "strength": 6.0835,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 60372,
+      "strength": 4.9437,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 60569,
+      "strength": 4.4999,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 60767,
+      "strength": 5.7158,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 60976,
+      "strength": 3.0045,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 61568,
+      "strength": 5.4771,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 62171,
+      "strength": 6.0911,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 62578,
+      "strength": 5.4489,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 62984,
+      "strength": 3.1913,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 63379,
+      "strength": 2.6215,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 63588,
+      "strength": 3.8764,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 63785,
+      "strength": 4.8611,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 64180,
+      "strength": 5.477,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 64610,
+      "strength": 1.9458,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 64795,
+      "strength": 4.2678,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 65178,
+      "strength": 4.518,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 65399,
+      "strength": 2.6942,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 65596,
+      "strength": 3.9002,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 65805,
+      "strength": 4.8038,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 66212,
+      "strength": 2.7033,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 67013,
+      "strength": 3.4256,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 67419,
+      "strength": 2.6209,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 68011,
+      "strength": 5.0784,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 68615,
+      "strength": 5.6029,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 68812,
+      "strength": 5.5766,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 69021,
+      "strength": 6.6583,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 69195,
+      "strength": 5.5785,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 69428,
+      "strength": 3.4588,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 69625,
+      "strength": 5.0902,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 69822,
+      "strength": 1.8409,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 70020,
+      "strength": 5.9129,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 70240,
+      "strength": 4.418,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 70426,
+      "strength": 4.6452,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 70635,
+      "strength": 6.0489,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 71843,
+      "strength": 3.7948,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 72249,
+      "strength": 2.6816,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 72446,
+      "strength": 3.3145,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 72644,
+      "strength": 3.2429,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 72853,
+      "strength": 3.6881,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 73050,
+      "strength": 1.6302,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 73456,
+      "strength": 3.1734,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 73665,
+      "strength": 3.0914,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 73863,
+      "strength": 1.9144,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 74048,
+      "strength": 3.1253,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 74455,
+      "strength": 3.6185,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 75070,
+      "strength": 2.6366,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 75465,
+      "strength": 2.4323,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 75662,
+      "strength": 2.7913,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 75860,
+      "strength": 2.5906,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 76069,
+      "strength": 3.1431,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 76672,
+      "strength": 2.9125,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 76881,
+      "strength": 3.6179,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 77682,
+      "strength": 2.766,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 78077,
+      "strength": 2.7608,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 78286,
+      "strength": 3.6667,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 78692,
+      "strength": 1.9061,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 78878,
+      "strength": 5.1798,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 79099,
+      "strength": 2.2053,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 79296,
+      "strength": 3.1006,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 79679,
+      "strength": 4.1104,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 79900,
+      "strength": 3.1555,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 80306,
+      "strength": 2.1906,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 80504,
+      "strength": 2.7782,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 80713,
+      "strength": 2.1488,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 80887,
+      "strength": 4.0881,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 81305,
+      "strength": 3.3715,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 81514,
+      "strength": 2.2102,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 81711,
+      "strength": 2.7361,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 81908,
+      "strength": 1.9798,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 82106,
+      "strength": 3.0173,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 82280,
+      "strength": 1.3713,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 82965,
+      "strength": 4.499,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 83743,
+      "strength": 5.7669,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 84126,
+      "strength": 4.0463,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 84532,
+      "strength": 3.0235,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 84730,
+      "strength": 3.1678,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 85124,
+      "strength": 2.2596,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 85333,
+      "strength": 3.4469,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 85716,
+      "strength": 3.9459,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 86134,
+      "strength": 3.5229,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 86332,
+      "strength": 2.7051,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 86738,
+      "strength": 2.6524,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 86936,
+      "strength": 3.1082,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 87156,
+      "strength": 1.6476,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 87319,
+      "strength": 3.297,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 87737,
+      "strength": 3.155,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 87946,
+      "strength": 3.2036,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 88340,
+      "strength": 2.4361,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 88549,
+      "strength": 3.0275,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 88932,
+      "strength": 4.1499,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 89362,
+      "strength": 3.6304,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 89548,
+      "strength": 3.6806,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 89966,
+      "strength": 2.3566,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 90569,
+      "strength": 3.7353,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 90964,
+      "strength": 3.9407,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 91173,
+      "strength": 3.6551,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 91580,
+      "strength": 2.7493,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 91765,
+      "strength": 3.4777,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 92160,
+      "strength": 3.7028,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 92578,
+      "strength": 3.5444,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 92787,
+      "strength": 3.0043,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 93158,
+      "strength": 2.3651,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 93379,
+      "strength": 3.1383,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 93774,
+      "strength": 3.4152,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 94389,
+      "strength": 3.0453,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 94772,
+      "strength": 2.7569,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 94993,
+      "strength": 3.0689,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 95376,
+      "strength": 3.7868,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 95794,
+      "strength": 3.7511,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 95991,
+      "strength": 4.1273,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 96409,
+      "strength": 2.6185,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 97396,
+      "strength": 3.9707,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 97617,
+      "strength": 4.1402,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 97814,
+      "strength": 4.2862,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 98023,
+      "strength": 3.6332,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 98209,
+      "strength": 3.6249,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 98801,
+      "strength": 2.6131,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 99230,
+      "strength": 2.6151,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 99428,
+      "strength": 3.6392,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 99637,
+      "strength": 2.5744,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 99811,
+      "strength": 4.2681,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 100032,
+      "strength": 2.6859,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 100241,
+      "strength": 3.1882,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 100624,
+      "strength": 2.5315,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 100844,
+      "strength": 1.43,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 101262,
+      "strength": 1.9789,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 101436,
+      "strength": 2.7592,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 102644,
+      "strength": 2.3224,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 102853,
+      "strength": 1.2813,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 103050,
+      "strength": 2.9775,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 103457,
+      "strength": 2.9526,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 103851,
+      "strength": 2.9153,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 104060,
+      "strength": 1.9355,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 104467,
+      "strength": 1.2159,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 104664,
+      "strength": 2.5037,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 105070,
+      "strength": 1.7631,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 105291,
+      "strength": 1.2965,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 105465,
+      "strength": 2.9431,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 105674,
+      "strength": 2.2252,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 105871,
+      "strength": 1.6496,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 106080,
+      "strength": 1.2085,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 106266,
+      "strength": 2.7032,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 106672,
+      "strength": 1.7658,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 107079,
+      "strength": 2.5093,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 107288,
+      "strength": 2.0479,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 107694,
+      "strength": 1.0839,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 107880,
+      "strength": 2.7444,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 108693,
+      "strength": 2.8452,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 108890,
+      "strength": 1.4832,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 109099,
+      "strength": 2.3093,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 109296,
+      "strength": 0.9374,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 109494,
+      "strength": 2.4076,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 109703,
+      "strength": 1.2673,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 109888,
+      "strength": 2.1428,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 110109,
+      "strength": 0.9009,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 110295,
+      "strength": 3.0086,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 110504,
+      "strength": 2.123,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 110701,
+      "strength": 2.346,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 110922,
+      "strength": 1.382,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 111107,
+      "strength": 3.2905,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 111316,
+      "strength": 1.4884,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 111514,
+      "strength": 1.6573,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 111746,
+      "strength": 0.9556,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 111909,
+      "strength": 3.0451,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 112106,
+      "strength": 2.348,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 112315,
+      "strength": 1.6714,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 112512,
+      "strength": 1.317,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 112710,
+      "strength": 2.9533,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 112919,
+      "strength": 0.9949,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 113522,
+      "strength": 2.7022,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 113731,
+      "strength": 2.0515,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 114126,
+      "strength": 1.1935,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 114323,
+      "strength": 2.6476,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 115136,
+      "strength": 2.9331,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 115345,
+      "strength": 1.151,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 115542,
+      "strength": 2.3433,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 115751,
+      "strength": 1.2561,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 115949,
+      "strength": 1.7962,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 116135,
+      "strength": 0.9576,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 116332,
+      "strength": 1.6001,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 116518,
+      "strength": 0.8602,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 116750,
+      "strength": 2.2054,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 116947,
+      "strength": 1.5636,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 117354,
+      "strength": 1.3741,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 117539,
+      "strength": 2.5015,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 117748,
+      "strength": 0.9869,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 117957,
+      "strength": 1.8257,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 118178,
+      "strength": 1.3656,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 118352,
+      "strength": 2.217,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 118561,
+      "strength": 2.061,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 118758,
+      "strength": 1.4955,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 118967,
+      "strength": 1.3256,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 119165,
+      "strength": 2.7456,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 119362,
+      "strength": 1.2027,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 119966,
+      "strength": 2.5118,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 120175,
+      "strength": 1.6732,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 120581,
+      "strength": 0.9148,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 120767,
+      "strength": 2.6462,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 121580,
+      "strength": 2.7002,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 121777,
+      "strength": 1.3036,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 121986,
+      "strength": 2.3318,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 122172,
+      "strength": 0.8945,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 122381,
+      "strength": 2.4281,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 122996,
+      "strength": 0.912,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 123182,
+      "strength": 2.6417,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 123391,
+      "strength": 1.7165,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 123588,
+      "strength": 1.7995,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 123797,
+      "strength": 1.5218,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 123995,
+      "strength": 2.6948,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 124192,
+      "strength": 1.7768,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 124598,
+      "strength": 1.128,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 124796,
+      "strength": 2.7929,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 124970,
+      "strength": 1.8634,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 125399,
+      "strength": 2.2357,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 125597,
+      "strength": 2.7112,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 125806,
+      "strength": 1.1961,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 126003,
+      "strength": 1.7784,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 126409,
+      "strength": 2.069,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 126607,
+      "strength": 2.3324,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 127013,
+      "strength": 2.033,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 127211,
+      "strength": 1.8097,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 127617,
+      "strength": 1.9259,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 127814,
+      "strength": 2.1395,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 128221,
+      "strength": 1.5972,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 128418,
+      "strength": 1.9717,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 128627,
+      "strength": 1.2135,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 128824,
+      "strength": 2.019,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 129033,
+      "strength": 0.9122,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 129231,
+      "strength": 1.5943,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 129881,
+      "strength": 0.8391,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 130252,
+      "strength": 1.3497,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 130635,
+      "strength": 3.0907,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 130844,
+      "strength": 3.9932,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 131680,
+      "strength": 1.7898,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 132063,
+      "strength": 2.2384,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 132284,
+      "strength": 0.7872,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 132447,
+      "strength": 3.2068,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 132609,
+      "strength": 0.8993,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 133085,
+      "strength": 1.2614,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 133445,
+      "strength": 1.4112,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 133840,
+      "strength": 2.5455,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 134060,
+      "strength": 3.5491,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 134861,
+      "strength": 4.1504,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 135070,
+      "strength": 1.2626,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 135268,
+      "strength": 4.8951,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 135477,
+      "strength": 1.3711,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 135674,
+      "strength": 3.8042,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 136069,
+      "strength": 2.2954,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 136278,
+      "strength": 2.3827,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 136684,
+      "strength": 1.639,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 136870,
+      "strength": 3.9579,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 137079,
+      "strength": 1.6731,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 137276,
+      "strength": 2.7208,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 137683,
+      "strength": 3.6814,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 137892,
+      "strength": 1.9488,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 138298,
+      "strength": 1.7617,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 138484,
+      "strength": 2.9769,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 138704,
+      "strength": 1.351,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 138890,
+      "strength": 3.3459,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 139285,
+      "strength": 3.0791,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 139494,
+      "strength": 2.179,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 139703,
+      "strength": 2.0461,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 139900,
+      "strength": 1.7183,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 140098,
+      "strength": 2.9633,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 140504,
+      "strength": 2.89,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 140899,
+      "strength": 3.4956,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 141108,
+      "strength": 2.1414,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 141514,
+      "strength": 1.5694,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 141711,
+      "strength": 3.4369,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 141920,
+      "strength": 1.2447,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 142106,
+      "strength": 2.8044,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 142512,
+      "strength": 2.1603,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 142710,
+      "strength": 1.9098,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 143116,
+      "strength": 1.3625,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 143314,
+      "strength": 2.4311,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 144126,
+      "strength": 2.6838,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 144335,
+      "strength": 1.3536,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 144730,
+      "strength": 1.4639,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 144927,
+      "strength": 2.4762,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 145740,
+      "strength": 2.3686,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 145937,
+      "strength": 1.5068,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 146332,
+      "strength": 1.6135,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 146541,
+      "strength": 1.6977,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 146762,
+      "strength": 1.0019,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 146947,
+      "strength": 2.0883,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 147354,
+      "strength": 2.6144,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 147551,
+      "strength": 1.9951,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 147760,
+      "strength": 1.6542,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 147958,
+      "strength": 1.1776,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 148155,
+      "strength": 2.7727,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 148561,
+      "strength": 2.5013,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 148956,
+      "strength": 2.6793,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 149165,
+      "strength": 2.0872,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 149560,
+      "strength": 1.7644,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 149757,
+      "strength": 2.3552,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 150163,
+      "strength": 2.2317,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 150570,
+      "strength": 2.9107,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 150779,
+      "strength": 1.7451,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 151174,
+      "strength": 1.3271,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 151371,
+      "strength": 2.0556,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 151591,
+      "strength": 0.9319,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 151777,
+      "strength": 1.7754,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 152184,
+      "strength": 2.1458,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 152381,
+      "strength": 1.9463,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 152752,
+      "strength": 1.3749,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 152973,
+      "strength": 1.5286,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 153379,
+      "strength": 2.0307,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 153786,
+      "strength": 2.2366,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 153995,
+      "strength": 1.7937,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 154204,
+      "strength": 2.4578,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 154389,
+      "strength": 1.3727,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 154598,
+      "strength": 2.5517,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 154807,
+      "strength": 0.8349,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 155005,
+      "strength": 1.7501,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 155400,
+      "strength": 1.6745,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 155609,
+      "strength": 1.5569,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 156003,
+      "strength": 1.1378,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 156212,
+      "strength": 2.0234,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 156607,
+      "strength": 1.7437,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 157013,
+      "strength": 1.8743,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 157222,
+      "strength": 1.1015,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 157617,
+      "strength": 1.447,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 157814,
+      "strength": 2.1467,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 158221,
+      "strength": 1.4939,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 158627,
+      "strength": 2.2284,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 158824,
+      "strength": 1.6893,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 159231,
+      "strength": 1.1986,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 159417,
+      "strength": 1.6854,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 159846,
+      "strength": 1.8838,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 160229,
+      "strength": 2.4457,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 160438,
+      "strength": 1.5454,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 160845,
+      "strength": 1.0326,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 161042,
+      "strength": 2.3674,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 161251,
+      "strength": 0.7809,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 161843,
+      "strength": 2.7067,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 162052,
+      "strength": 1.7682,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 162447,
+      "strength": 1.2658,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 162656,
+      "strength": 2.2303,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 163051,
+      "strength": 1.9655,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 163457,
+      "strength": 2.6006,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 163666,
+      "strength": 1.3851,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 164061,
+      "strength": 1.3865,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 164258,
+      "strength": 2.1607,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 164467,
+      "strength": 0.7811,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 165071,
+      "strength": 2.3832,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 165268,
+      "strength": 1.8099,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 165663,
+      "strength": 1.489,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 165872,
+      "strength": 2.7235,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 166266,
+      "strength": 2.3412,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 166673,
+      "strength": 2.7036,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 166882,
+      "strength": 1.5945,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 167079,
+      "strength": 2.5481,
+      "kind": "eighth"
+    },
+    {
+      "time_ms": 167277,
+      "strength": 1.4873,
+      "kind": "beat"
+    },
+    {
+      "time_ms": 167474,
+      "strength": 2.442,
+      "kind": "eighth"
+    }
+  ],
+  "limitations": [
+    "Automatic rhythm arrangement, without manual listening verification or melody transcription.",
+    "MP3 decoder/playback latency and USB audio-start delay require board calibration."
+  ]
+}
