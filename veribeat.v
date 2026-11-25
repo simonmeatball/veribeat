@@ -49,6 +49,9 @@ module veribeat #(
     wire [11:0] game_color, menu_color;
     wire hud_pixel;
     wire [19:0] total_score;
+    wire [7:0] grade;
+    wire [11:0] judgments;
+    wire [19:0] judgment_ages;
     wire [23:0] score_digits;
     wire [10:0] combo, longest_streak;
     wire [15:0] combo_digits, longest_digits;
@@ -107,6 +110,7 @@ module veribeat #(
         .score_digits(score_digits), .combo_digits(combo_digits), .longest_digits(longest_digits),
         .progress_pixels(progress_pixels),
         .countdown(countdown),
+        .grade(grade), .judgments(judgments), .judgment_ages(judgment_ages),
         .hud_pixel(hud_pixel), .color(menu_color)
     );
     game_session #(.CYCLES_PER_MS(CYCLES_PER_MS)) session (
@@ -144,6 +148,7 @@ module veribeat #(
         .chart_data(chart_data), .chart_note_count(chart_note_count), .front_bank(front_bank), .front_valid(front_valid),
         .mask_write(mask_write), .mask_clear(mask_clear), .mask_address(mask_address),
         .mask_bits(mask_bits), .pulse_ages(pulse_ages), .pulse_hit(pulse_hit),
+        .judgments(judgments), .judgment_ages(judgment_ages),
         .hits(hits), .resolved_count(resolved_count), .overrun(overrun),
         .note_miss(note_miss), .misclicks(lane_misclicks)
     );
@@ -153,6 +158,10 @@ module veribeat #(
         .read_address({field_x[8:7],y[8:0]}), .pixel(tile_pixel)
     );
     // Statistics and combo scoring.
+    result_grade grading (
+        .clk(clk), .reset(reset_game), .note_count(chart_note_count),
+        .total_score(total_score), .grade(grade)
+    );
     combo_score scoring (
         .clk(clk), .reset(reset_game), .hits(hits), .note_miss(note_miss),
         .misclicks(misclick_events), .total_score(total_score), .score_digits(score_digits),

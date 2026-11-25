@@ -16,6 +16,9 @@ module menu_display (
     input wire [15:0] combo_digits, longest_digits,
     input wire [9:0] progress_pixels, // 0..512 pixels across the four lanes.
     input wire [1:0] countdown,
+    input wire [7:0] grade,
+    input wire [11:0] judgments,
+    input wire [19:0] judgment_ages,
     output reg hud_pixel,
     output reg [11:0] color
 );
@@ -46,6 +49,12 @@ module menu_display (
     localparam [4:0] TEXT_MAIN_MENU = 5'd23;
     localparam [4:0] TEXT_PAUSE_KEYS = 5'd24;
     localparam [4:0] TEXT_GET_READY = 5'd25;
+    localparam [4:0] TEXT_PERFECT = 5'd26;
+    localparam [4:0] TEXT_GREAT = 5'd27;
+    localparam [4:0] TEXT_GOOD = 5'd28;
+    localparam [4:0] TEXT_MISS = 5'd29;
+    localparam [4:0] TEXT_BAD = 5'd30;
+    localparam [4:0] TEXT_GRADE = 5'd31;
 
     localparam TEXT_HEIGHT = 20;
     localparam CELL_WIDTH = 16;
@@ -100,6 +109,12 @@ module menu_display (
                 TEXT_MAIN_MENU: line = "3 MAIN MENU                     ";
                 TEXT_PAUSE_KEYS: line = "PRESS 1 2 3 TO CHOOSE           ";
                 TEXT_GET_READY: line = "GET READY                       ";
+                TEXT_PERFECT: line = "PERFECT                         ";
+                TEXT_GREAT: line = "GREAT                           ";
+                TEXT_GOOD: line = "GOOD                            ";
+                TEXT_MISS: line = "MISS                            ";
+                TEXT_BAD: line = "BAD                             ";
+                TEXT_GRADE: line = "GRADE                           ";
                 default: line = {32{" "}};
             endcase
             text_character = line[255-8*column -: 8];
@@ -112,6 +127,7 @@ module menu_display (
     reg [4:0] message;
     reg [9:0] text_x, text_y;
     reg text_enabled, number_enabled, wide_number, large_number;
+    reg letter_enabled, feedback_visible;
     reg [23:0] number;
     reg [11:0] background, ink;
     // Stage 1 captures layout results before the text/numeric lookup.
@@ -120,6 +136,8 @@ module menu_display (
     reg [2:0] layout_digit_index;
     reg [23:0] layout_number;
     reg layout_numeric;
+    reg layout_letter, layout_feedback;
+    reg [7:0] layout_grade;
     reg layout_text_visible;
     reg [1:0] layout_column;
     reg [2:0] layout_row;
@@ -130,10 +148,16 @@ module menu_display (
     reg [7:0] character;
     reg [2:0] column_reg, row_reg;
     reg [11:0] background_reg, ink_reg;
-    reg hud_reg;
+    reg hud_reg, feedback_reg;
     wire [9:0] dx = x-text_x;
     wire [9:0] dy = y-text_y;
     wire [14:0] bitmap = glyph3x5(character);
+    wire glyph_ink = column_reg<3 && row_reg<5 && bitmap[14-3*row_reg-column_reg];
+    wire [9:0] field_x = x-`FIELD_LEFT;
+    wire [1:0] feedback_lane = field_x[8:7];
+    wire [9:0] feedback_left = `FIELD_LEFT+{1'b0,feedback_lane,7'b0};
+    wire [2:0] lane_judgment = judgments[3*feedback_lane +: 3];
+    wire [4:0] lane_judgment_age = judgment_ages[5*feedback_lane +: 5];
 
     always @* begin
         background=COLOR_BACKGROUND;
@@ -145,6 +169,8 @@ module menu_display (
         number_enabled=0;
         wide_number=0;
         large_number=0;
+        letter_enabled=0;
+        feedback_visible=0;
         number=0;
         if (x >= `FIELD_LEFT && x < `FIELD_RIGHT && y >= `FIELD_TOP && y < 448) begin
             background=COLOR_PANEL;
@@ -225,6 +251,26 @@ module menu_display (
                 text_enabled=1;
             end
             `SCREEN_GAME: begin
+                if (x>=`FIELD_LEFT && x<`FIELD_RIGHT && y>=376 && y<396 &&
+                    lane_judgment_age<30 && lane_judgment!=`JUDGMENT_NONE) begin
+                    text_y=376;
+                    text_x=feedback_left+32;
+                    text_enabled=1;
+                    feedback_visible=1;
+                    case(lane_judgment)
+                        `JUDGMENT_PERFECT: begin
+                            message=TEXT_PERFECT; text_x=feedback_left+8; ink=COLOR_TEXT;
+                        end
+                        `JUDGMENT_GREAT: begin
+                            message=TEXT_GREAT; text_x=feedback_left+24; ink=COLOR_ACCENT;
+                        end
+                        `JUDGMENT_GOOD: begin message=TEXT_GOOD; ink=COLOR_PURPLE; end
+                        `JUDGMENT_MISS: begin message=TEXT_MISS; ink=COLOR_ERROR; end
+                        default: begin
+                            message=TEXT_BAD; text_x=feedback_left+40; ink=COLOR_ERROR;
+                        end
+                    endcase
+                end
                 // Thin cyan progress track above the score and combo text.
                 if (x>=62 && x<578 && y>=3 && y<11) begin
                     background=COLOR_PURPLE;
@@ -318,6 +364,18 @@ module menu_display (
                     end
                     if (number_enabled) text_x=wide_number ? SCORE_VALUE_X : COUNT_VALUE_X;
                 end
+                if (!failed && x>=448 && y>=64 && y<84) begin
+                    message=TEXT_GRADE; text_x=464; text_y=64; ink=COLOR_TEXT;
+                end else if (!failed && x>=492 && x<516 && y>=96 && y<136) begin
+                    text_x=492; text_y=96; large_number=1; letter_enabled=1;
+                    case(grade)
+                        "S", "A": ink=COLOR_ACCENT;
+                        "B": ink=COLOR_TEXT;
+                        "C": ink=COLOR_PURPLE;
+                        "D": ink=12'hf90;
+                        default: ink=COLOR_ERROR;
+                    endcase
+                end
             end
             `SCREEN_LOADING: begin
                 if (y>=160 && y<180) begin
@@ -351,6 +409,10 @@ module menu_display (
             layout_digit_index <= 0;
             layout_number <= 0;
             layout_numeric <= 0;
+            layout_letter <= 0;
+            layout_grade <= "F";
+            layout_feedback <= 0;
+            feedback_reg <= 0;
             layout_text_visible <= 0;
             layout_column <= 0;
             layout_row <= 0;
@@ -373,6 +435,9 @@ module menu_display (
                 wide_number ? 3'd5-dx[6:4] : 3'd3-{1'b0,dx[5:4]};
             layout_number <= number;
             layout_numeric <= number_enabled;
+            layout_letter <= letter_enabled;
+            layout_grade <= grade;
+            layout_feedback <= feedback_visible;
             layout_text_visible <= text_enabled && x>=text_x &&
                 (large_number ? (dx<24 && dy<40) :
                 (dx<32*CELL_WIDTH && dy<TEXT_HEIGHT && dx[3:2]<3));
@@ -386,7 +451,8 @@ module menu_display (
             // from the VGA row counter and region/coordinate calculations.
             character <= " ";
             if (layout_text_visible) begin
-                if (layout_numeric)
+                if (layout_letter) character <= layout_grade;
+                else if (layout_numeric)
                     character <= 8'd48 + {4'b0,layout_number[4*layout_digit_index +: 4]};
                 else
                     character <= text_character(layout_message,layout_text_column);
@@ -396,13 +462,15 @@ module menu_display (
             background_reg <= layout_background;
             ink_reg <= layout_ink;
             hud_reg <= layout_hud;
+            feedback_reg <= layout_feedback;
 
             // Stage 3 resolves the glyph pixel. Delay HUD selection alongside
             // RGB so the top-level game/menu multiplexer uses the same pixel.
             color <= background_reg;
-            if (column_reg<3 && row_reg<5 && bitmap[14-3*row_reg-column_reg])
+            if (glyph_ink)
                 color <= ink_reg;
-            hud_pixel <= hud_reg;
+            // Judgment glyphs overlay tiles without covering them with a box.
+            hud_pixel <= hud_reg || (feedback_reg && glyph_ink);
         end
     end
 endmodule

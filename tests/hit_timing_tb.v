@@ -15,7 +15,10 @@ module hit_timing_tb;
     wire [15:0] ages, digits;
     wire [3:0] hit_color, hits;
     wire [10:0] points;
-    integer cycles;
+    wire [11:0] judgments;
+    wire [19:0] judgment_ages;
+    integer cycles, offset, age;
+    reg [2:0] expected_judgment;
     always #5 clk=~clk;
     notes chart(clk,enable,address,data);
     control dut (
@@ -25,6 +28,7 @@ module hit_timing_tb;
         .front_bank(front),.front_valid(valid),.mask_write(write_enable),
         .mask_clear(clear_pixel),.mask_address(write_address),.mask_bits(bits),
         .pulse_ages(ages),.pulse_hit(hit_color),.hits(hits),
+        .judgments(judgments),.judgment_ages(judgment_ages),
         .resolved_count(resolved_count),.overrun(overrun)
     );
     tile_mask mask(clk,front,write_enable,clear_pixel,write_address,bits,read_address,pixel);
@@ -93,6 +97,7 @@ module hit_timing_tb;
         @(negedge clk); press=0;
         build(2577);
         check_one_hit;
+        if(judgments[2:0]!==`JUDGMENT_GOOD) $stop;
 
         restart;
         elapsed=2240; press=1;
@@ -108,6 +113,36 @@ module hit_timing_tb;
         elapsed=3061; press=2; // Lane 1 has a single note, now 161 ms late.
         build(3061);
         if(points !== 0 || hit_color[1] !== 0 || dut.resolved[2] !== 1'b1) $stop;
+        // Exhaustive early/late timing boundaries on an isolated lane.
+        for(offset=-161;offset<=161;offset=offset+1) begin
+            restart;
+            elapsed=2900+offset; press=2;
+            build(2900+offset);
+            if(offset < -160) expected_judgment=`JUDGMENT_BAD;
+            else if(offset > 160) expected_judgment=`JUDGMENT_MISS;
+            else if(offset>=-40 && offset<=40) expected_judgment=`JUDGMENT_PERFECT;
+            else if(offset>=-90 && offset<=90) expected_judgment=`JUDGMENT_GREAT;
+            else expected_judgment=`JUDGMENT_GOOD;
+            if(judgments[5:3]!==expected_judgment || judgment_ages[9:5]!==0) begin
+                $display("FAIL judgment at %0d ms: %0d expected %0d",offset,judgments[5:3],expected_judgment); $stop;
+            end
+        end
+        // Four simultaneous presses retain independent lane judgments.
+        chart.chart[0]=40'h8000000000 | (40'd1000 << 2);
+        chart.chart[1]=40'h8000000000 | (40'd1050 << 2) | 1;
+        chart.chart[2]=40'h8000000000 | (40'd1100 << 2) | 2;
+        chart.chart[3]=40'h8000000000 | (40'd1140 << 2) | 3;
+        restart;
+        elapsed=2400; press=15;
+        build(2400);
+        if(points!==4 || judgments!=={`JUDGMENT_GOOD,`JUDGMENT_GOOD,`JUDGMENT_GREAT,`JUDGMENT_PERFECT}) $stop;
+        // Labels live for thirty video frames and held keys do not refresh them.
+        for(age=1;age<=31;age=age+1) begin
+            build(2400);
+            if(judgment_ages[4:0]!==age) $stop;
+        end
+        build(2400);
+        if(judgment_ages[4:0]!==31) $stop;
         $display("PASS: centered tiles, overlapping windows, oldest-note consumption, held keys, buffered boundaries and misses");
         $finish;
     end

@@ -24,6 +24,8 @@ module control #(
     output wire [1:0] mask_bits,
     output reg [15:0] pulse_ages,
     output reg [3:0] pulse_hit,
+    output reg [11:0] judgments,
+    output reg [19:0] judgment_ages,
     output reg [3:0] hits,
     output reg [10:0] resolved_count,
     output reg overrun,
@@ -52,6 +54,7 @@ module control #(
     reg [3:0] missed;
     reg [3:0] candidate_valid;
     reg [9:0] candidate_index [0:3];
+    reg [2:0] candidate_judgment [0:3];
     reg [8:0] paint_row;
     reg [8:0] tile_bottom;
     reg [8:0] tile_top;
@@ -103,6 +106,8 @@ module control #(
             front_valid <= 0;
             pulse_ages <= 16'hcccc;
             pulse_hit <= 0;
+            judgments <= 0;
+            judgment_ages <= {4{5'd31}};
             hits <= 0;
             note_miss <= 0;
             misclicks <= 0;
@@ -114,6 +119,7 @@ module control #(
             paint_lane <= 0;
             for (lane=0; lane<4; lane=lane+1) begin
                 candidate_index[lane] <= 0;
+                candidate_judgment[lane] <= `JUDGMENT_NONE;
                 pending_time[lane] <= 0;
                 captured_time[lane] <= 0;
             end
@@ -132,6 +138,9 @@ module control #(
                 for (lane=0; lane<4; lane=lane+1)
                     if (pulse_ages[4*lane +: 4] < 12)
                         pulse_ages[4*lane +: 4] <= pulse_ages[4*lane +: 4] + 1'b1;
+                for (lane=0; lane<4; lane=lane+1)
+                    if (running && judgment_ages[5*lane +: 5] < 31)
+                        judgment_ages[5*lane +: 5] <= judgment_ages[5*lane +: 5] + 1'b1;
                 if (running && state == IDLE) begin
                     snapshot_time <= $signed({1'b0,elapsed_ms}) - PRE_ROLL_MS;
                     captured_press <= pending_press | pressed;
@@ -171,6 +180,11 @@ module control #(
                             !candidate_valid[note_lane]) begin
                             candidate_valid[note_lane] <= 1;
                             candidate_index[note_lane] <= index[9:0];
+                            if (press_delta >= -40 && press_delta <= 40)
+                                candidate_judgment[note_lane] <= `JUDGMENT_PERFECT;
+                            else if (press_delta >= -90 && press_delta <= 90)
+                                candidate_judgment[note_lane] <= `JUDGMENT_GREAT;
+                            else candidate_judgment[note_lane] <= `JUDGMENT_GOOD;
                         end
                     end
                     if (index + 11'd1 == chart_note_count) state <= COMMIT;
@@ -231,6 +245,9 @@ module control #(
                         if (selected_hits[lane] || missed[lane] || captured_press[lane]) begin
                             pulse_ages[4*lane +: 4] <= 0;
                             pulse_hit[lane] <= selected_hits[lane];
+                            judgment_ages[5*lane +: 5] <= 0;
+                            judgments[3*lane +: 3] <= selected_hits[lane] ? candidate_judgment[lane] :
+                                missed[lane] ? `JUDGMENT_MISS : `JUDGMENT_BAD;
                         end
                     end
                     state <= READY;

@@ -6,7 +6,7 @@ The home screen offers all three songs in one FPGA build. Press keypad `1`
 for Yoru ni Kakeru (song 0), `2` for APT. (song 1), or `3` for Sunflower
 (song 2). The selected song loads through the laptop audio player before
 play starts. During play, the HUD shows the score and current combo. At the
-end, the results screen shows score, hits, missed notes, misclicks, and the
+end, the results screen shows a letter grade, score, hits, missed notes, misclicks, and the
 longest streak. Press any keypad key or board button to return home, then make
 a fresh song selection.
 
@@ -45,6 +45,30 @@ overlap, the later note stays available for another press. The judge stores
 the press timestamp so waiting for the next VGA frame does not shorten the
 late window. Holding a key produces one press. Expired notes are resolved
 after the selected hits.
+
+Each lane briefly displays a timing judgment above its input pad:
+
+| Judgment | Distance from the note's target time |
+| --- | --- |
+| PERFECT | Within ±40 ms |
+| GREAT | More than 40 ms, up to ±90 ms |
+| GOOD | More than 90 ms, up to ±160 ms |
+| MISS | Note passed its late window without a hit |
+| BAD | Lane press without an eligible note |
+
+Labels last 30 video frames (about half a second), replacing the previous
+label in that lane. Chords retain separate judgments. Classification uses
+the captured press time, including buffered presses processed next frame.
+All three successful judgments retain the existing hit/combo point awards.
+The white hit and red failure outlines remain alongside the text.
+
+The result grade compares the final combo score with the maximum score for
+the selected chart: **S ≥95%, A ≥90%, B ≥80%, C ≥70%, D ≥60%, F <60%**.
+The maximum includes the combo multipliers, so grades reflect both hits and
+maintaining a streak. Empty charts receive F. Audio-error screens omit the
+grade. `result_grade.v` pipelines the threshold arithmetic outside the VGA
+pixel path. Judgment text uses the existing three-stage menu pipeline and
+overlays only lit glyph pixels, leaving the tiles visible between letters.
 
 The supplied [song_0 chart](charts/song_0.txt) contains 854 notes matched to
 spectral attacks in `audio/songs/song_0.mp3`, YOASOBI's Yoru ni Kakeru. Analysis
@@ -135,7 +159,7 @@ sources and set `veribeat` as the synthesis top.
 clock.v          vga.v          veribeat.v
 keypad.v         notes.v        control.v
 tile_mask.v      display.v      event_counter.v
-combo_score.v
+combo_score.v   result_grade.v
 game_session.v   audio.v        song_library.v
 menu_display.v   song_progress.v
 ```
@@ -241,7 +265,8 @@ python3 tools/run_tests.py integration_song_1
 Use `--simulator-dir /path/to/bin` when Icarus is installed outside PATH.
 The runner also executes the Python chart-compiler checks. The full suite
 covers direct clock/VGA timing, the keypad and session, 1,024-note gameplay,
-hit-window edge cases, statistics, combo scoring, screen pixels, HUD alignment,
+hit-window and judgment boundaries, statistics, combo scoring, grade tiers,
+screen pixels, HUD alignment,
 and the full flow for every song.
 
 The integration simulation checks physical matrix song selection, UART

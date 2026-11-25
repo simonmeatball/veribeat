@@ -8,6 +8,13 @@
 `define SCREEN_PAUSED 3'd4
 `define SCREEN_COUNTDOWN 3'd5
 
+`define JUDGMENT_NONE 3'd0
+`define JUDGMENT_PERFECT 3'd1
+`define JUDGMENT_GREAT 3'd2
+`define JUDGMENT_GOOD 3'd3
+`define JUDGMENT_MISS 3'd4
+`define JUDGMENT_BAD 3'd5
+
 `define FIELD_LEFT 64
 `define FIELD_RIGHT 576
 `define FIELD_TOP 48

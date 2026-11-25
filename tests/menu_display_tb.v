@@ -6,6 +6,9 @@ module menu_display_tb;
     reg [1:0] song=0,countdown=3;
     reg failed=0;
     reg [9:0] progress_pixels=0;
+    reg [7:0] grade="S";
+    reg [11:0] judgments=0;
+    reg [19:0] judgment_ages={4{5'd31}};
     wire [11:0] color;
     integer column,row,file;
     always #5 clk=~clk;
@@ -15,6 +18,7 @@ module menu_display_tb;
         .score_digits(24'h123400),.combo_digits(16'h0042),.longest_digits(16'h0321),
         .progress_pixels(progress_pixels),
         .countdown(countdown),
+        .grade(grade),.judgments(judgments),.judgment_ages(judgment_ages),
         .hud_pixel(hud_pixel),.color(color));
     task check_pixel;
         input [9:0] px,py;
@@ -75,7 +79,28 @@ module menu_display_tb;
         check_pixel(352,15,12'h6ef); // Live COMBO label.
         check_pixel(448,15,12'h6ef); // Combo digits use cyan.
         if(!hud_pixel) $stop;
+        judgments={`JUDGMENT_MISS,`JUDGMENT_GOOD,`JUDGMENT_GREAT,`JUDGMENT_PERFECT};
+        judgment_ages=0;
+        check_pixel(72,376,12'hfff); // PERFECT in lane 0.
+        if(!hud_pixel) $stop;
+        check_pixel(84,376,12'h113); // Character gap leaves the tile layer visible.
+        if(hud_pixel) $stop;
+        check_pixel(216,376,12'h6ef); // GREAT in lane 1.
+        check_pixel(352,376,12'hb8f); // GOOD in lane 2.
+        check_pixel(480,376,12'hf44); // MISS in lane 3.
+        judgments[2:0]=`JUDGMENT_BAD;
+        check_pixel(104,376,12'hf44);
+        judgment_ages={4{5'd30}};
+        check_pixel(104,376,12'h113);
+        if(hud_pixel) $stop;
         screen=2;
+        check_pixel(464,64,12'hfff); // GRADE label.
+        check_pixel(492,96,12'h6ef); // Large S.
+        grade="A";
+        check_pixel(492,96,12'h124); // A starts with an empty top-left cell.
+        check_pixel(500,96,12'h6ef);
+        grade="F";
+        check_pixel(492,96,12'hf44);
         check_pixel(112,160,12'hfff); // SCORE label.
         check_pixel(400,160,12'h124); // First score digit 1, top left is blank.
         check_pixel(404,160,12'hfff); // First score digit 1, top center is lit.
