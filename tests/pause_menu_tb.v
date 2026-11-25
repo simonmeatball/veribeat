@@ -12,7 +12,13 @@ module pause_menu_tb;
     integer button;
     reg [31:0] frozen_time;
     time mark;
+    time countdown_start;
+    reg [31:0] countdown_time;
     always #5 clk=~clk;
+    always @(countdown) if(countdown==3) begin
+        countdown_start=$time;
+        countdown_time=elapsed;
+    end
     game_session #(.CYCLES_PER_MS(2),.PRE_ROLL_MS(40)) dut(
         .clk(clk),.reset(reset),.buttons(buttons),.audio_ready(ready),
         .audio_error(1'b0),.audio_busy(1'b0),.resolved_count(11'd0),
@@ -29,7 +35,7 @@ module pause_menu_tb;
         if(pause) pauses=pauses+1;
         if(resume) resumes=resumes+1;
         if(game_reset) resets=resets+1;
-        if(countdown!=0 && (running || elapsed!=0 || play)) begin
+        if(countdown!=0 && (running || elapsed!=countdown_time || play || resume || game_reset)) begin
             $display("FAIL: gameplay/audio advanced during countdown"); $stop;
         end
     end
@@ -39,6 +45,29 @@ module pause_menu_tb;
             @(negedge clk); keys=value; any_key=1;
             @(negedge clk); keys=0; any_key=0;
             @(negedge clk);
+        end
+    endtask
+    task continue_countdown;
+        reg [31:0] held_time;
+        integer old_loads,old_stops,old_resets,old_resumes;
+        time start;
+        begin
+            held_time=elapsed;
+            old_loads=loads; old_stops=stops; old_resets=resets; old_resumes=resumes;
+            key(1);
+            if(running || countdown!=3 || elapsed!=held_time || resumes!=old_resumes) $stop;
+            start=countdown_start;
+            wait(countdown==2);
+            if($time-start!=20000) $stop;
+            start=$time;
+            wait(countdown==1);
+            if($time-start!=20000) $stop;
+            start=$time;
+            wait(countdown==0);
+            if($time-start!=20000 || !running || elapsed!=held_time) $stop;
+            repeat(2) @(negedge clk);
+            if(loads!=old_loads || stops!=old_stops || resets!=old_resets ||
+               resumes!=old_resumes+(held_time>=40 ? 1 : 0)) $stop;
         end
     endtask
     task pause_button;
@@ -66,7 +95,7 @@ module pause_menu_tb;
         @(negedge clk); any_key=1;
         @(negedge clk); any_key=0;
         if(!paused) $stop;
-        key(1);
+        continue_countdown;
         if(!running || resumes!=1 || elapsed<frozen_time || song!=1) $stop;
         // All four outer buttons pause. Further outer presses must keep
         // the game paused, without restarting, stopping, or resuming it.
@@ -76,7 +105,7 @@ module pause_menu_tb;
             pause_button(4'b1111);
             if(elapsed!=frozen_time || pauses!=button+2 || resumes!=button+1 ||
                loads!=1 || song!=1 || stops!=2) $stop;
-            key(1);
+            continue_countdown;
             if(!running || resumes!=button+2) $stop;
         end
         pause_button(4'b0010);
@@ -111,7 +140,7 @@ module pause_menu_tb;
         // Pausing during lead-in must not send a hold/resume for unstarted audio.
         pause_button(4'b0010);
         if(pauses!=7) $stop;
-        key(1);
+        continue_countdown;
         if(!running || resumes!=5) $stop;
         // Restart remains a keypad menu choice.
         pause_button(4'b0001);
@@ -131,5 +160,5 @@ module pause_menu_tb;
         $display("PASS: all four outer buttons pause, keypad menu actions, audio commands and exact 3-2-1 countdown");
         $finish;
     end
-    initial begin #200000; $display("FAIL pause-menu timeout"); $stop; end
+    initial begin #1000000; $display("FAIL pause-menu timeout"); $stop; end
 endmodule

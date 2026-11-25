@@ -2,23 +2,40 @@
 module combo_score_tb;
     reg clk=0,reset=1;
     reg [3:0] hits=0;
+    reg [11:0] hit_judgments={4{`JUDGMENT_PERFECT}};
     reg miss=0;
     reg [15:0] misclicks=0;
     wire [19:0] points;
     wire [23:0] digits;
     wire [10:0] combo,best;
     wire [15:0] combo_digits,best_digits;
-    integer note,expected;
+    integer note,expected,base;
     always #5 clk=~clk;
-    combo_score dut(clk,reset,hits,miss,misclicks,points,digits,combo,combo_digits,best,best_digits);
+    combo_score dut(.clk(clk),.reset(reset),.hits(hits),.hit_judgments(hit_judgments),
+        .note_miss(miss),.misclicks(misclicks),.total_score(points),.score_digits(digits),
+        .combo(combo),.combo_digits(combo_digits),.longest_streak(best),.longest_digits(best_digits));
+    function [23:0] decimal_digits;
+        input integer value;
+        integer digit;
+        begin
+            decimal_digits=0;
+            for(digit=0;digit<6;digit=digit+1) begin
+                decimal_digits[4*digit +: 4]=value%10;
+                value=value/10;
+            end
+        end
+    endfunction
+    // Binary score and decimal display must always publish the same snapshot.
+    always @(negedge clk) if(!reset && digits!==decimal_digits(points)) $stop;
     task submit;
         input [3:0] hit_mask;
         input missed;
         input [15:0] invalid;
         begin
             @(negedge clk); hits=hit_mask; miss=missed; misclicks=invalid;
-            @(negedge clk); hits=0; miss=0; misclicks=0;
-            repeat(32) @(negedge clk);
+            @(negedge clk); hits=0; miss=0; misclicks=0; hit_judgments=0;
+            repeat(64) @(negedge clk);
+            hit_judgments={4{`JUDGMENT_PERFECT}};
         end
     endtask
     initial begin
@@ -62,7 +79,31 @@ module combo_score_tb;
         @(negedge clk); reset=1;
         @(negedge clk);
         if(points !== 0 || best !== 0 || digits !== 0 || best_digits !== 0) $stop;
-        $display("PASS: combo multipliers, chords, penalty resets, longest streak, perfect 1024-note score and restart");
+        reset=0;
+        // Mixed-quality chords retain lane order when crossing a combo tier.
+        for(note=0;note<8;note=note+1) submit(1,0,0);
+        hit_judgments={`JUDGMENT_GOOD,`JUDGMENT_PERFECT,`JUDGMENT_GREAT,`JUDGMENT_GOOD};
+        submit(15,0,0);
+        if(points!==1340 || combo!==12) $stop;
+        submit(0,1,0);
+        if(points!==1340 || combo!==0) $stop;
+        hit_judgments={`JUDGMENT_GOOD,`JUDGMENT_GREAT,`JUDGMENT_GOOD,`JUDGMENT_PERFECT};
+        submit(15,0,16'hffff);
+        if(points!==1640 || combo!==0 || best!==12) $stop;
+        @(negedge clk); reset=1;
+        @(negedge clk); reset=0;
+        expected=0;
+        for(note=1;note<=1024;note=note+1) begin
+            case(note%3)
+                0: begin hit_judgments={4{`JUDGMENT_PERFECT}}; base=100; end
+                1: begin hit_judgments={4{`JUDGMENT_GREAT}}; base=80; end
+                2: begin hit_judgments={4{`JUDGMENT_GOOD}}; base=60; end
+            endcase
+            submit(1,0,0);
+            expected=expected+base*(note>=30 ? 4 : note>=20 ? 3 : note>=10 ? 2 : 1);
+            if(points!==expected || digits!==decimal_digits(expected) || combo!==note) $stop;
+        end
+        $display("PASS: weighted timing scores, combo tiers, mixed chords, penalties, coherent BCD, 1024-note games and restart");
         $finish;
     end
 endmodule

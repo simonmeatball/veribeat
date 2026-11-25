@@ -27,6 +27,7 @@ module control #(
     output reg [11:0] judgments,
     output reg [19:0] judgment_ages,
     output reg [3:0] hits,
+    output reg [11:0] hit_judgments,
     output reg [10:0] resolved_count,
     output reg overrun,
     output reg note_miss,
@@ -109,6 +110,7 @@ module control #(
             judgments <= 0;
             judgment_ages <= {4{5'd31}};
             hits <= 0;
+            hit_judgments <= 0;
             note_miss <= 0;
             misclicks <= 0;
             resolved_count <= 0;
@@ -199,7 +201,12 @@ module control #(
                     misclicks <= captured_press & ~selected_hits;
                     resolved_count <= resolved_count + hit_count;
                     for (lane=0; lane<4; lane=lane+1) begin
-                        if (selected_hits[lane]) resolved[candidate_index[lane]] <= 1;
+                        if (selected_hits[lane]) begin
+                            resolved[candidate_index[lane]] <= 1;
+                            // Scoring needs quality alongside the hit pulse,
+                            // before the later visible feedback is published.
+                            hit_judgments[3*lane +: 3] <= candidate_judgment[lane];
+                        end
                     end
                     painting <= 1;
                     index <= 0;

@@ -33,6 +33,7 @@ module game_session #(
     reg [3:0] state;
     localparam DIVIDER_BITS = CYCLES_PER_MS > 1 ? $clog2(CYCLES_PER_MS) : 1;
     reg [DIVIDER_BITS-1:0] ms_divider;
+    reg [DIVIDER_BITS-1:0] countdown_divider;
     reg [DIVIDER_BITS-1:0] debounce_divider;
     (* ASYNC_REG = "TRUE" *) reg [3:0] buttons_meta, buttons_sync;
     reg [3:0] button_sample, button_stable;
@@ -40,6 +41,7 @@ module game_session #(
     reg [3:0] stable_ticks [0:3];
     reg [3:0] settle;
     reg restart_countdown;
+    reg resume_after_countdown;
     reg [1:0] countdown_seconds;
     reg [9:0] countdown_ms;
     integer button;
@@ -83,6 +85,8 @@ module game_session #(
             song_index <= 0;
             settle <= 0;
             restart_countdown <= 0;
+            resume_after_countdown <= 0;
+            countdown_divider <= 0;
             countdown_seconds <= 0;
             countdown_ms <= 0;
             elapsed_ms <= 0;
@@ -125,22 +129,29 @@ module game_session #(
                     else if (audio_error) state <= FAILED;
                     else if (audio_ready && !audio_busy) begin
                         if (restart_countdown) begin
+                            resume_after_countdown <= 0;
                             countdown_seconds <= 3;
                             countdown_ms <= 0;
+                            countdown_divider <= 0;
                             ms_divider <= 0;
                             state <= COUNTDOWN;
                         end else state <= PLAYING;
                     end
                 end
                 COUNTDOWN: begin
-                    if (ms_divider == CYCLES_PER_MS-1) begin
-                        ms_divider <= 0;
+                    // A separate divider preserves the paused sub-ms phase.
+                    if (countdown_divider == CYCLES_PER_MS-1) begin
+                        countdown_divider <= 0;
                         if (countdown_ms == 999) begin
                             countdown_ms <= 0;
-                            if (countdown_seconds == 1) state <= PLAYING;
+                            if (countdown_seconds == 1) begin
+                                state <= PLAYING;
+                                if (resume_after_countdown && elapsed_ms >= PRE_ROLL_MS)
+                                    cmd_resume <= 1;
+                            end
                             else countdown_seconds <= countdown_seconds-1'b1;
                         end else countdown_ms <= countdown_ms+1'b1;
-                    end else ms_divider <= ms_divider+1'b1;
+                    end else countdown_divider <= countdown_divider+1'b1;
                 end
                 PLAYING: begin
                     if (|button_pulse) begin
@@ -159,8 +170,11 @@ module game_session #(
                 end
                 PAUSED: begin
                     if (song_press[0]) begin
-                        state <= PLAYING;
-                        if (elapsed_ms >= PRE_ROLL_MS) cmd_resume <= 1;
+                        resume_after_countdown <= 1;
+                        countdown_seconds <= 3;
+                        countdown_ms <= 0;
+                        countdown_divider <= 0;
+                        state <= COUNTDOWN;
                     end else if (song_press[1]) begin
                         restart_countdown <= 1;
                         state <= STOP_REQUEST;

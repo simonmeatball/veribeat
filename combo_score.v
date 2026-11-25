@@ -1,43 +1,92 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
-// The judge emits at most four hits per frame. Drain them individually so
-// each note in a chord advances the streak and uses its own multiplier.
+// The judge emits one batch of up to four hits per video frame. Drain its
+// lanes in order, retaining each timing quality and combo multiplier.
 module combo_score (
     input wire clk,
     input wire reset,
     input wire [3:0] hits,
+    input wire [11:0] hit_judgments,
     input wire note_miss,
     input wire [15:0] misclicks,
-    output wire [19:0] total_score,
-    output wire [23:0] score_digits,
+    output reg [19:0] total_score,
+    output reg [23:0] score_digits,
     output reg [10:0] combo,
     output reg [15:0] combo_digits,
     output reg [10:0] longest_streak,
     output reg [15:0] longest_digits
 );
-    reg [10:0] pending_hits;
+    `include "game_defs.vh"
+    reg [3:0] pending_hits;
+    reg [11:0] pending_judgments;
     // A penalty cancels combo growth for already-queued hits. The next
     // batch can start a new streak once those hits have drained.
     reg block_pending_combo;
     wire penalty = note_miss || |misclicks;
-    wire [2:0] incoming = {2'b0,hits[0]} + {2'b0,hits[1]} +
-                          {2'b0,hits[2]} + {2'b0,hits[3]};
+    wire [1:0] next_lane = pending_hits[0] ? 2'd0 : pending_hits[1] ? 2'd1 :
+                           pending_hits[2] ? 2'd2 : 2'd3;
     wire consume = pending_hits != 0;
     wire [10:0] next_combo = combo == 1024 ? combo : combo + 1'b1;
     wire [2:0] multiplier = penalty || block_pending_combo ? 3'd1 :
         next_combo >= 30 ? 3'd4 : next_combo >= 20 ? 3'd3 :
         next_combo >= 10 ? 3'd2 : 3'd1;
-    wire [3:0] awards = consume ? 4'b1111 >> (4-multiplier) : 4'b0;
-    wire [12:0] hundreds;
-    wire [15:0] hundred_digits;
-    // Every award is a multiple of 100. Four BCD digits plus two zeroes
-    // represent the maximum perfect-game score of 403900 without a divider.
-    event_counter #(.WIDTH(13),.LIMIT(9999)) weighted_points (
-        .clk(clk),.reset(reset),.hits(awards),.points(hundreds),.digits(hundred_digits)
-    );
-    assign total_score = {7'b0,hundreds} * 20'd100;
-    assign score_digits = {hundred_digits,8'h00};
+    reg [6:0] base_points;
+    always @* begin
+        case(pending_judgments[3*next_lane +: 3])
+            `JUDGMENT_PERFECT: base_points=100;
+            `JUDGMENT_GREAT: base_points=80;
+            `JUDGMENT_GOOD: base_points=60;
+            default: base_points=0;
+        endcase
+    end
+    wire [8:0] award = multiplier==4 ? {base_points,2'b0} :
+        multiplier==3 ? {1'b0,base_points,1'b0}+{2'b0,base_points} :
+        multiplier==2 ? {1'b0,base_points,1'b0} : {2'b0,base_points};
+    reg [8:0] awarded_points;
+    reg [19:0] accumulated_score;
+
+    // Convert a snapshot over twenty cycles, avoiding a long decimal carry
+    // or divider path. Publish binary score and all six digits together.
+    reg [19:0] snapshot, binary_shift;
+    reg [23:0] bcd;
+    reg [4:0] remaining_bits;
+    function [23:0] adjust_bcd;
+        input [23:0] value;
+        integer digit;
+        begin
+            adjust_bcd=value;
+            for(digit=0;digit<6;digit=digit+1)
+                if(value[4*digit +: 4]>=5)
+                    adjust_bcd[4*digit +: 4]=value[4*digit +: 4]+4'd3;
+        end
+    endfunction
+    wire [23:0] corrected_bcd=adjust_bcd(bcd);
+    wire [23:0] shifted_bcd={corrected_bcd[22:0],binary_shift[19]};
+    always @(posedge clk) begin
+        if(reset) begin
+            awarded_points<=0; accumulated_score<=0;
+            total_score<=0; score_digits<=0;
+            snapshot<=0; binary_shift<=0; bcd<=0; remaining_bits<=0;
+        end else begin
+            awarded_points<=consume ? award : 9'd0;
+            accumulated_score<=accumulated_score+{11'b0,awarded_points};
+            if(remaining_bits==0) begin
+                snapshot<=accumulated_score;
+                binary_shift<=accumulated_score;
+                bcd<=0;
+                remaining_bits<=20;
+            end else begin
+                bcd<=shifted_bcd;
+                binary_shift<={binary_shift[18:0],1'b0};
+                remaining_bits<=remaining_bits-1'b1;
+                if(remaining_bits==1) begin
+                    total_score<=snapshot;
+                    score_digits<=shifted_bcd;
+                end
+            end
+        end
+    end
 
     function [15:0] increment_bcd;
         input [15:0] value;
@@ -65,15 +114,19 @@ module combo_score (
     always @(posedge clk) begin
         if(reset) begin
             pending_hits<=0;
+            pending_judgments<=0;
             block_pending_combo<=0;
             combo<=0;
             combo_digits<=0;
             longest_streak<=0;
             longest_digits<=0;
         end else begin
-            pending_hits<=pending_hits+incoming-consume;
-            if(pending_hits==0 && incoming!=0) block_pending_combo<=penalty;
-            else if(penalty) block_pending_combo<=1;
+            if(|hits) begin
+                pending_hits<=hits;
+                pending_judgments<=hit_judgments;
+                block_pending_combo<=penalty;
+            end else if(consume) pending_hits[next_lane]<=0;
+            if(!(|hits) && penalty) block_pending_combo<=1;
             if(penalty) begin
                 combo<=0;
                 combo_digits<=0;

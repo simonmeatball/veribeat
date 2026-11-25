@@ -7,6 +7,7 @@ module session_tb;
     reg ready=0, error=0, busy=0;
     wire load,play,stop,pause,resume,game_reset,running,paused,finished,failed,home,loading;
     wire [1:0] song;
+    wire [1:0] countdown;
     wire [31:0] elapsed;
     integer starts=0, loads=0, selection;
     reg [31:0] paused_time;
@@ -17,7 +18,7 @@ module session_tb;
         .chart_duration_ms(32'd200),.song_press(song_press),.any_key(any_key),
         .song_index(song),.home(home),.loading(loading),.cmd_load(load),.cmd_play(play),
         .cmd_stop(stop),.cmd_pause(pause),.cmd_resume(resume),.game_reset(game_reset),
-        .running(running),.elapsed_ms(elapsed),.paused(paused),.finished(finished),.failed(failed)
+        .running(running),.elapsed_ms(elapsed),.paused(paused),.countdown(countdown),.finished(finished),.failed(failed)
     );
     always @(posedge clk) begin
         if(play) starts=starts+1;
@@ -52,7 +53,9 @@ module session_tb;
                 if(elapsed != paused_time) $stop;
                 @(negedge clk); song_press=1;
                 @(negedge clk); song_press=0;
-                if(!running) $stop;
+                if(running || countdown!=3 || elapsed!=paused_time) $stop;
+                wait(running);
+                if(elapsed!=paused_time) $stop;
             end
             wait(finished);
             if(starts != selection+1) $stop;

@@ -23,20 +23,22 @@ its bottom pad, aligned with the purple timing line. The hit window is
 ±160 ms. A hit flashes white and advances the combo by one note. A missed
 note or unmatched press flashes red and resets the combo to zero.
 
-Each hit earns 100 base points with the following multiplier. The threshold
-note uses the new multiplier, so the tenth consecutive hit earns 200 points.
+Each hit earns timing-weighted base points: **Perfect 100, Great 80, Good 60**.
+The current combo multiplies that award. The threshold note uses the new
+multiplier, so the tenth consecutive Perfect earns 200 points.
 
-| Current combo after the hit | Multiplier | Points per note |
+| Current combo after the hit | Multiplier | Perfect / Great / Good points |
 | --- | ---: | ---: |
-| 1–9 | 1× | 100 |
-| 10–19 | 2× | 200 |
-| 20–29 | 3× | 300 |
-| 30 and above | 4× | 400 |
+| 1–9 | 1× | 100 / 80 / 60 |
+| 10–19 | 2× | 200 / 160 / 120 |
+| 20–29 | 3× | 300 / 240 / 180 |
+| 30 and above | 4× | 400 / 320 / 240 |
 
-Each note in a chord advances the streak and receives its own multiplier.
+Each note in a chord retains its timing quality, advances the streak, and
+receives its own multiplier in lane order.
 Misses and misclicks reset the current combo while the longest streak is
 retained for the results screen. Simultaneous successes and an error award
-base points and reset the combo. Restarting or returning home clears the
+timing-weighted base points and reset the combo. Restarting or returning home clears the
 run's score and streak records. A perfect 1,024-note run earns 403900 points;
 the six-digit score display and four-digit streak display cover this range.
 
@@ -59,16 +61,21 @@ Each lane briefly displays a timing judgment above its input pad:
 Labels last 30 video frames (about half a second), replacing the previous
 label in that lane. Chords retain separate judgments. Classification uses
 the captured press time, including buffered presses processed next frame.
-All three successful judgments retain the existing hit/combo point awards.
+All three successful judgments count as hits and advance the combo.
 The white hit and red failure outlines remain alongside the text.
 
-The result grade compares the final combo score with the maximum score for
-the selected chart: **S ≥95%, A ≥90%, B ≥80%, C ≥70%, D ≥60%, F <60%**.
-The maximum includes the combo multipliers, so grades reflect both hits and
-maintaining a streak. Empty charts receive F. Audio-error screens omit the
-grade. `result_grade.v` pipelines the threshold arithmetic outside the VGA
-pixel path. Judgment text uses the existing three-stage menu pipeline and
-overlays only lit glyph pixels, leaving the tiles visible between letters.
+The result grade uses **100 × max(0, hits − factor × (misses + misclicks)) /
+total chart notes**, with **S ≥95%, A ≥90%, B ≥80%, C ≥70%, D ≥60%, F <60%**.
+The default factor is **0.25**: four errors subtract one hit's worth of grade
+credit. Set the nonnegative `GRADE_PENALTY_PERCENT` parameter on `veribeat`
+to change this factor (25 = 0.25, 50 = 0.5, 100 = 1). Timing weights and
+combo bonuses affect numeric score; each successful hit contributes one
+hit to the grade. Empty charts receive F and audio-error screens omit the
+grade. The photographed 808-hit/46-miss/45-misclick run earns about **91.95%,
+an A** with the default factor. `result_grade.v` pipelines exact integer
+threshold comparisons outside the VGA pixel path. Judgment text uses the
+existing three-stage menu pipeline and overlays only lit glyph pixels,
+leaving the tiles visible between letters.
 
 The supplied [song_0 chart](charts/song_0.txt) contains 854 notes matched to
 spectral attacks in `audio/songs/song_0.mp3`, YOASOBI's Yoru ni Kakeru. Analysis
@@ -209,10 +216,12 @@ on-board calibration using `audio_offset_ms`.
 | Up, Left, Right, Down | Pause chart time/audio and open the pause menu |
 
 The pause menu accepts keypad `1` to continue, `2` to restart the current
-song, or `3` to return to the home screen. Continue preserves the score,
-combo, and playback position. Restart clears the run, reloads the same song,
-and displays a three-second **3–2–1** countdown before gameplay and its
-normal visual lead-in.
+song, or `3` to return to the home screen. Continue displays a three-second
+**3–2–1** countdown, preserving the score, combo, playback position, and
+partial millisecond before resuming gameplay and audio. Restart clears the
+run, reloads the same song, and shows the same countdown before gameplay
+and its normal visual lead-in. Continuing during the visual lead-in keeps
+audio unstarted until the remaining lead-in completes.
 Returning home stops audio and clears the run. A fresh key press is needed
 to select another song. Outer board buttons leave an already-paused game
 paused. Use the keypad choices to continue, restart, or return home.
@@ -238,9 +247,11 @@ and fills completely at the song's duration. `song_progress.v` computes a
 512-pixel width once per frame using nine sequential division steps,
 keeping that arithmetic outside the VGA pixel path.
 `event_counter.v` instances count hits, individual missed notes, and misclick events.
-`combo_score.v` tracks the current/longest streak and awards combo multipliers.
-Its decimal score accumulator works in hundreds, avoiding division or a
-long decimal carry chain in the VGA pixel path.
+`combo_score.v` tracks the current/longest streak and awards timing-weighted
+points with combo multipliers. It snapshots each frame's hit qualities with
+the hit pulse, accumulates binary points, and converts a score snapshot to
+six decimal digits over twenty clocks. Binary score and digits publish
+together, keeping decimal carry/division out of the VGA pixel path.
 `control.v` scans the selected chart twice per
 frame to judge notes and paint the next tile mask. `tile_mask.v` stores two
 banks of four lane masks. A complete bank is published at VGA line 47,

@@ -8,7 +8,8 @@ module veribeat #(
     parameter SONG1_FILE = "charts/song_1.mem",
     parameter SONG2_FILE = "charts/song_2.mem",
     parameter integer CYCLES_PER_MS = 100000,
-    parameter integer UART_CLKS_PER_BIT = 868
+    parameter integer UART_CLKS_PER_BIT = 868,
+    parameter integer GRADE_PENALTY_PERCENT = 25
 ) (
     input  wire       clk,
     input  wire       btnC,
@@ -51,6 +52,7 @@ module veribeat #(
     wire [19:0] total_score;
     wire [7:0] grade;
     wire [11:0] judgments;
+    wire [11:0] hit_judgments;
     wire [19:0] judgment_ages;
     wire [23:0] score_digits;
     wire [10:0] combo, longest_streak;
@@ -149,7 +151,7 @@ module veribeat #(
         .mask_write(mask_write), .mask_clear(mask_clear), .mask_address(mask_address),
         .mask_bits(mask_bits), .pulse_ages(pulse_ages), .pulse_hit(pulse_hit),
         .judgments(judgments), .judgment_ages(judgment_ages),
-        .hits(hits), .resolved_count(resolved_count), .overrun(overrun),
+        .hits(hits), .hit_judgments(hit_judgments), .resolved_count(resolved_count), .overrun(overrun),
         .note_miss(note_miss), .misclicks(lane_misclicks)
     );
     tile_mask mask (
@@ -158,12 +160,13 @@ module veribeat #(
         .read_address({field_x[8:7],y[8:0]}), .pixel(tile_pixel)
     );
     // Statistics and combo scoring.
-    result_grade grading (
+    result_grade #(.PENALTY_PERCENT(GRADE_PENALTY_PERCENT)) grading (
         .clk(clk), .reset(reset_game), .note_count(chart_note_count),
-        .total_score(total_score), .grade(grade)
+        .hit_count(hit_count), .miss_count(miss_count), .misclick_count(misclick_count), .grade(grade)
     );
     combo_score scoring (
         .clk(clk), .reset(reset_game), .hits(hits), .note_miss(note_miss),
+        .hit_judgments(hit_judgments),
         .misclicks(misclick_events), .total_score(total_score), .score_digits(score_digits),
         .combo(combo), .combo_digits(combo_digits),
         .longest_streak(longest_streak), .longest_digits(longest_digits)

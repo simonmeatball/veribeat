@@ -16,7 +16,9 @@ module hit_timing_tb;
     wire [3:0] hit_color, hits;
     wire [10:0] points;
     wire [11:0] judgments;
+    wire [11:0] hit_judgments;
     wire [19:0] judgment_ages;
+    wire [19:0] weighted_score;
     integer cycles, offset, age;
     reg [2:0] expected_judgment;
     always #5 clk=~clk;
@@ -29,10 +31,15 @@ module hit_timing_tb;
         .mask_clear(clear_pixel),.mask_address(write_address),.mask_bits(bits),
         .pulse_ages(ages),.pulse_hit(hit_color),.hits(hits),
         .judgments(judgments),.judgment_ages(judgment_ages),
+        .hit_judgments(hit_judgments),
         .resolved_count(resolved_count),.overrun(overrun)
     );
     tile_mask mask(clk,front,write_enable,clear_pixel,write_address,bits,read_address,pixel);
     event_counter tally(clk,reset,hits,points,digits);
+    combo_score scoring(.clk(clk),.reset(reset),.hits(hits),.hit_judgments(hit_judgments),
+        .note_miss(dut.note_miss),.misclicks({12'b0,dut.misclicks}),
+        .total_score(weighted_score),.score_digits(),.combo(),.combo_digits(),
+        .longest_streak(),.longest_digits());
 
     task restart;
         begin
@@ -51,6 +58,9 @@ module hit_timing_tb;
                 @(negedge clk); cycles=cycles+1;
             end
             if(cycles >= 150000) $stop;
+            // The real raster leaves ample time before publishing the bank.
+            // Allow the score's serial decimal conversion to settle too.
+            repeat(48) @(negedge clk);
             publish_tick=1;
             @(negedge clk); publish_tick=0;
             if(overrun || !valid) $stop;
@@ -126,6 +136,10 @@ module hit_timing_tb;
             if(judgments[5:3]!==expected_judgment || judgment_ages[9:5]!==0) begin
                 $display("FAIL judgment at %0d ms: %0d expected %0d",offset,judgments[5:3],expected_judgment); $stop;
             end
+            if(weighted_score!==(expected_judgment==`JUDGMENT_PERFECT ? 100 :
+                expected_judgment==`JUDGMENT_GREAT ? 80 : expected_judgment==`JUDGMENT_GOOD ? 60 : 0)) begin
+                $display("FAIL timing weight at offset %0d: score %0d",offset,weighted_score); $stop;
+            end
         end
         // Four simultaneous presses retain independent lane judgments.
         chart.chart[0]=40'h8000000000 | (40'd1000 << 2);
@@ -136,6 +150,7 @@ module hit_timing_tb;
         elapsed=2400; press=15;
         build(2400);
         if(points!==4 || judgments!=={`JUDGMENT_GOOD,`JUDGMENT_GOOD,`JUDGMENT_GREAT,`JUDGMENT_PERFECT}) $stop;
+        if(weighted_score!==300) $stop;
         // Labels live for thirty video frames and held keys do not refresh them.
         for(age=1;age<=31;age=age+1) begin
             build(2400);
